@@ -1,64 +1,87 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Sidebar } from "@/components/sidebar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Users, UserCheck, UserX, Shield } from "lucide-react"
+import { useState } from 'react'
+import { Sidebar } from '@/components/sidebar'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Users,
+  UserCheck,
+  UserX,
+  Shield
+} from 'lucide-react'
 
 // Mock data for users
 const users = [
   {
-    id: "U-001",
-    name: "Иван Петров",
-    email: "ivan.petrov@company.com",
-    role: "Администратор",
-    status: "active",
-    lastLogin: "2024-01-15 14:30",
-    machinesAccess: 5,
+    id: 'U-001',
+    name: 'Иван Петров',
+    email: 'ivan.petrov@company.com',
+    role: 'Администратор',
+    status: 'active',
+    lastLogin: '2024-01-15 14:30',
+    machinesAccess: 5
   },
   {
-    id: "U-002",
-    name: "Мария Сидорова",
-    email: "maria.sidorova@company.com",
-    role: "Оператор",
-    status: "active",
-    lastLogin: "2024-01-15 09:15",
-    machinesAccess: 3,
+    id: 'U-002',
+    name: 'Мария Сидорова',
+    email: 'maria.sidorova@company.com',
+    role: 'Оператор',
+    status: 'active',
+    lastLogin: '2024-01-15 09:15',
+    machinesAccess: 3
   },
   {
-    id: "U-003",
-    name: "Алексей Козлов",
-    email: "alexey.kozlov@company.com",
-    role: "Менеджер",
-    status: "inactive",
-    lastLogin: "2024-01-10 16:45",
-    machinesAccess: 8,
-  },
+    id: 'U-003',
+    name: 'Алексей Козлов',
+    email: 'alexey.kozlov@company.com',
+    role: 'Менеджер',
+    status: 'inactive',
+    lastLogin: '2024-01-10 16:45',
+    machinesAccess: 8
+  }
 ]
 
-const roles = ["Все", "Администратор", "Менеджер", "Оператор"]
+const roles = ['Все', 'Администратор', 'Менеджер', 'Оператор']
 
 export default function UsersPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [roleFilter, setRoleFilter] = useState("Все")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState('Все')
+  const [statusFilter, setStatusFilter] = useState('all')
 
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users.filter(user => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.id.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesRole = roleFilter === "Все" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
+    const matchesRole = roleFilter === 'Все' || user.role === roleFilter
+    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  const activeUsers = users.filter((u) => u.status === "active").length
+  const activeUsers = users.filter(u => u.status === 'active').length
   const totalAccess = users.reduce((sum, u) => sum + u.machinesAccess, 0)
 
   return (
@@ -74,7 +97,9 @@ export default function UsersPage() {
                 <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
                   Управление пользователями
                 </h1>
-                <p className="text-muted-foreground mt-2">Контроль доступа и управление ролями</p>
+                <p className="text-muted-foreground mt-2">
+                  Контроль доступа и управление ролями
+                </p>
               </div>
               <Button className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -87,12 +112,16 @@ export default function UsersPage() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Всего пользователей</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Всего пользователей
+                </CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-xs text-muted-foreground">зарегистрированных</p>
+                <p className="text-xs text-muted-foreground">
+                  зарегистрированных
+                </p>
               </CardContent>
             </Card>
 
@@ -102,30 +131,44 @@ export default function UsersPage() {
                 <UserCheck className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{activeUsers}</div>
-                <p className="text-xs text-muted-foreground">пользователей онлайн</p>
+                <div className="text-2xl font-bold text-green-600">
+                  {activeUsers}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  пользователей онлайн
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Неактивные</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Неактивные
+                </CardTitle>
                 <UserX className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">{users.length - activeUsers}</div>
-                <p className="text-xs text-muted-foreground">требуют внимания</p>
+                <div className="text-2xl font-bold text-red-600">
+                  {users.length - activeUsers}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  требуют внимания
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Доступ к аппаратам</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Доступ к аппаратам
+                </CardTitle>
                 <Shield className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalAccess}</div>
-                <p className="text-xs text-muted-foreground">общих разрешений</p>
+                <p className="text-xs text-muted-foreground">
+                  общих разрешений
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -139,7 +182,7 @@ export default function UsersPage() {
                   <Input
                     placeholder="Поиск пользователей..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -152,8 +195,11 @@ export default function UsersPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    {roles.map((role) => (
-                      <DropdownMenuItem key={role} onClick={() => setRoleFilter(role)}>
+                    {roles.map(role => (
+                      <DropdownMenuItem
+                        key={role}
+                        onClick={() => setRoleFilter(role)}
+                      >
                         {role}
                       </DropdownMenuItem>
                     ))}
@@ -164,13 +210,26 @@ export default function UsersPage() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="gap-2 bg-transparent">
                       <Users className="h-4 w-4" />
-                      Статус: {statusFilter === "all" ? "Все" : statusFilter === "active" ? "Активные" : "Неактивные"}
+                      Статус:{' '}
+                      {statusFilter === 'all'
+                        ? 'Все'
+                        : statusFilter === 'active'
+                          ? 'Активные'
+                          : 'Неактивные'}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setStatusFilter("all")}>Все пользователи</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter("active")}>Активные</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>Неактивные</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+                      Все пользователи
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setStatusFilter('active')}>
+                      Активные
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setStatusFilter('inactive')}
+                    >
+                      Неактивные
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -195,27 +254,45 @@ export default function UsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.map((user) => (
+                  {filteredUsers.map(user => (
                     <TableRow key={user.id}>
                       <TableCell>
                         <div>
                           <div className="font-medium">{user.name}</div>
-                          <div className="text-sm text-muted-foreground">{user.email}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {user.email}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={user.role === "Администратор" ? "default" : "outline"}>{user.role}</Badge>
+                        <Badge
+                          variant={
+                            user.role === 'Администратор'
+                              ? 'default'
+                              : 'outline'
+                          }
+                        >
+                          {user.role}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={user.status === "active" ? "default" : "secondary"}
-                          className={user.status === "active" ? "bg-green-100 text-green-800" : ""}
+                          variant={
+                            user.status === 'active' ? 'default' : 'secondary'
+                          }
+                          className={
+                            user.status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : ''
+                          }
                         >
-                          {user.status === "active" ? "Активен" : "Неактивен"}
+                          {user.status === 'active' ? 'Активен' : 'Неактивен'}
                         </Badge>
                       </TableCell>
                       <TableCell>{user.machinesAccess} аппаратов</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{user.lastLogin}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {user.lastLogin}
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

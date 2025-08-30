@@ -1,55 +1,64 @@
-"use client"
+'use client'
 
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 interface AddProductDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) {
+export function AddProductDialog({
+  open,
+  onOpenChange
+}: AddProductDialogProps) {
   const [formData, setFormData] = useState({
-    name: "",
-    category: "",
-    price: "",
-    cost: "",
-    supplier: "",
-    barcode: "",
-    initialStock: "",
-    lowStockThreshold: "",
-    description: "",
+    name: '',
+    category: '',
+    price: '',
+    cost: '',
+    supplier: '',
+    barcode: '',
+    initialStock: '',
+    lowStockThreshold: '',
+    description: ''
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Adding product:", formData)
+    console.log('Adding product:', formData)
     onOpenChange(false)
     // Reset form
     setFormData({
-      name: "",
-      category: "",
-      price: "",
-      cost: "",
-      supplier: "",
-      barcode: "",
-      initialStock: "",
-      lowStockThreshold: "",
-      description: "",
+      name: '',
+      category: '',
+      price: '',
+      cost: '',
+      supplier: '',
+      barcode: '',
+      initialStock: '',
+      lowStockThreshold: '',
+      description: ''
     })
   }
 
@@ -57,8 +66,12 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-[family-name:var(--font-work-sans)]">Добавить новый товар</DialogTitle>
-          <DialogDescription>Заполните информацию о новом товаре для вендинговых аппаратов</DialogDescription>
+          <DialogTitle className="font-[family-name:var(--font-work-sans)]">
+            Добавить новый товар
+          </DialogTitle>
+          <DialogDescription>
+            Заполните информацию о новом товаре для вендинговых аппаратов
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -67,7 +80,9 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, name: e.target.value }))
+                }
                 placeholder="Например: Кока-Кола 0.5л"
                 required
               />
@@ -75,7 +90,11 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
 
             <div className="space-y-2">
               <Label htmlFor="category">Категория</Label>
-              <Select onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}>
+              <Select
+                onValueChange={value =>
+                  setFormData(prev => ({ ...prev, category: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Выберите категорию" />
                 </SelectTrigger>
@@ -92,12 +111,14 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price">Цена продажи (₽)</Label>
+              <Label htmlFor="price">Цена продажи (₸)</Label>
               <Input
                 id="price"
                 type="number"
                 value={formData.price}
-                onChange={(e) => setFormData((prev) => ({ ...prev, price: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, price: e.target.value }))
+                }
                 placeholder="89"
                 min="0"
                 step="0.01"
@@ -106,12 +127,14 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cost">Себестоимость (₽)</Label>
+              <Label htmlFor="cost">Себестоимость (₸)</Label>
               <Input
                 id="cost"
                 type="number"
                 value={formData.cost}
-                onChange={(e) => setFormData((prev) => ({ ...prev, cost: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, cost: e.target.value }))
+                }
                 placeholder="45"
                 min="0"
                 step="0.01"
@@ -125,7 +148,9 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
             <Input
               id="supplier"
               value={formData.supplier}
-              onChange={(e) => setFormData((prev) => ({ ...prev, supplier: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, supplier: e.target.value }))
+              }
               placeholder="Например: Coca-Cola HBC"
             />
           </div>
@@ -135,7 +160,9 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
             <Input
               id="barcode"
               value={formData.barcode}
-              onChange={(e) => setFormData((prev) => ({ ...prev, barcode: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, barcode: e.target.value }))
+              }
               placeholder="4607065390013"
             />
           </div>
@@ -147,7 +174,12 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
                 id="initialStock"
                 type="number"
                 value={formData.initialStock}
-                onChange={(e) => setFormData((prev) => ({ ...prev, initialStock: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    initialStock: e.target.value
+                  }))
+                }
                 placeholder="100"
                 min="0"
                 required
@@ -160,7 +192,12 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
                 id="lowStockThreshold"
                 type="number"
                 value={formData.lowStockThreshold}
-                onChange={(e) => setFormData((prev) => ({ ...prev, lowStockThreshold: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    lowStockThreshold: e.target.value
+                  }))
+                }
                 placeholder="20"
                 min="0"
                 required
@@ -173,14 +210,20 @@ export function AddProductDialog({ open, onOpenChange }: AddProductDialogProps) 
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, description: e.target.value }))
+              }
               placeholder="Дополнительная информация о товаре"
               rows={3}
             />
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Отмена
             </Button>
             <Button type="submit">Добавить товар</Button>

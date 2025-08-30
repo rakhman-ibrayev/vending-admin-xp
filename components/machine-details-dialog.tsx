@@ -1,11 +1,25 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
-import { MapPin, Thermometer, TrendingUp, Wifi, WifiOff, Wrench, ExternalLink } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
+import {
+  MapPin,
+  Thermometer,
+  TrendingUp,
+  Wifi,
+  WifiOff,
+  Wrench,
+  ExternalLink
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface Machine {
   id: string
@@ -29,26 +43,30 @@ interface MachineDetailsDialogProps {
 
 const statusConfig = {
   online: {
-    label: "Работает",
-    color: "bg-green-500",
-    variant: "default" as const,
-    icon: Wifi,
+    label: 'Работает',
+    color: 'bg-green-500',
+    variant: 'default' as const,
+    icon: Wifi
   },
   maintenance: {
-    label: "Обслуживание",
-    color: "bg-yellow-500",
-    variant: "secondary" as const,
-    icon: Wrench,
+    label: 'Обслуживание',
+    color: 'bg-yellow-500',
+    variant: 'secondary' as const,
+    icon: Wrench
   },
   offline: {
-    label: "Не в сети",
-    color: "bg-red-500",
-    variant: "destructive" as const,
-    icon: WifiOff,
-  },
+    label: 'Не в сети',
+    color: 'bg-red-500',
+    variant: 'destructive' as const,
+    icon: WifiOff
+  }
 }
 
-export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDetailsDialogProps) {
+export function MachineDetailsDialog({
+  machine,
+  open,
+  onOpenChange
+}: MachineDetailsDialogProps) {
   const router = useRouter()
 
   if (!machine) return null
@@ -68,7 +86,9 @@ export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDet
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="font-[family-name:var(--font-work-sans)] text-xl">{machine.name}</DialogTitle>
+              <DialogTitle className="font-[family-name:var(--font-work-sans)] text-xl">
+                {machine.name}
+              </DialogTitle>
               <DialogDescription className="flex items-center gap-2 mt-2">
                 <span>{machine.id}</span>
                 <Badge variant={status.variant} className="gap-1">
@@ -98,7 +118,11 @@ export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDet
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
-                        fillPercentage > 80 ? "bg-green-500" : fillPercentage > 50 ? "bg-yellow-500" : "bg-red-500"
+                        fillPercentage > 80
+                          ? 'bg-green-500'
+                          : fillPercentage > 50
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
                       }`}
                       style={{ width: `${fillPercentage}%` }}
                     />
@@ -112,9 +136,13 @@ export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDet
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Доходы сегодня</span>
+                    <span className="text-sm text-muted-foreground">
+                      Доходы сегодня
+                    </span>
                   </div>
-                  <div className="text-lg font-bold">₽{machine.revenue.toLocaleString()}</div>
+                  <div className="text-lg font-bold">
+                    ₸{machine.revenue.toLocaleString()}
+                  </div>
                 </div>
               </CardContent>
             </Card>

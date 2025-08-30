@@ -1,17 +1,17 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   Coffee,
   MapPin,
@@ -21,116 +21,116 @@ import {
   Filter,
   Wifi,
   WifiOff,
-  Wrench,
-} from "lucide-react";
-import { AddMachineDialog } from "@/components/add-machine-dialog";
-import Link from "next/link";
+  Wrench
+} from 'lucide-react'
+import { AddMachineDialog } from '@/components/add-machine-dialog'
+import Link from 'next/link'
 
 // Mock data for vending machines
 const machines = [
   {
-    id: "VM-001",
-    name: "Мега Центр #1",
-    location: "ТЦ Мега, 1 этаж, вход А",
-    status: "online",
-    lastSync: "2 мин назад",
+    id: 'VM-001',
+    name: 'Мега Центр #1',
+    location: 'ТЦ Мега, 1 этаж, вход А',
+    status: 'online',
+    lastSync: '2 мин назад',
     revenue: 2450,
     capacity: 45,
     filled: 38,
     temperature: 4.2,
-    model: "VendMax Pro 3000",
-    installDate: "2024-01-15",
+    model: 'VendMax Pro 3000',
+    installDate: '2024-01-15'
   },
   {
-    id: "VM-002",
-    name: "Офис Сити",
-    location: "Офис-центр Сити, 5 этаж",
-    status: "maintenance",
-    lastSync: "1 час назад",
+    id: 'VM-002',
+    name: 'Офис Сити',
+    location: 'Офис-центр Сити, 5 этаж',
+    status: 'maintenance',
+    lastSync: '1 час назад',
     revenue: 1890,
     capacity: 40,
     filled: 12,
     temperature: 4.8,
-    model: "VendMax Standard 2500",
-    installDate: "2024-02-20",
+    model: 'VendMax Standard 2500',
+    installDate: '2024-02-20'
   },
   {
-    id: "VM-003",
-    name: "Университет А",
-    location: "Университет, корпус А, 1 этаж",
-    status: "offline",
-    lastSync: "3 часа назад",
+    id: 'VM-003',
+    name: 'Университет А',
+    location: 'Университет, корпус А, 1 этаж',
+    status: 'offline',
+    lastSync: '3 часа назад',
     revenue: 3120,
     capacity: 50,
     filled: 45,
     temperature: null,
-    model: "VendMax Pro 3000",
-    installDate: "2023-12-10",
+    model: 'VendMax Pro 3000',
+    installDate: '2023-12-10'
   },
   {
-    id: "VM-004",
-    name: "Аэропорт Зона А",
-    location: "Аэропорт, зона вылета А",
-    status: "online",
-    lastSync: "1 мин назад",
+    id: 'VM-004',
+    name: 'Аэропорт Зона А',
+    location: 'Аэропорт, зона вылета А',
+    status: 'online',
+    lastSync: '1 мин назад',
     revenue: 4670,
     capacity: 60,
     filled: 52,
     temperature: 3.9,
-    model: "VendMax Premium 4000",
-    installDate: "2024-03-05",
+    model: 'VendMax Premium 4000',
+    installDate: '2024-03-05'
   },
   {
-    id: "VM-005",
-    name: "Торговый Дом",
-    location: "ТД Европейский, 2 этаж",
-    status: "online",
-    lastSync: "5 мин назад",
+    id: 'VM-005',
+    name: 'Торговый Дом',
+    location: 'ТД Европейский, 2 этаж',
+    status: 'online',
+    lastSync: '5 мин назад',
     revenue: 2890,
     capacity: 45,
     filled: 23,
     temperature: 4.1,
-    model: "VendMax Standard 2500",
-    installDate: "2024-01-28",
-  },
-];
+    model: 'VendMax Standard 2500',
+    installDate: '2024-01-28'
+  }
+]
 
 const statusConfig = {
   online: {
-    label: "Работает",
-    color: "bg-green-500",
-    variant: "default" as const,
-    icon: Wifi,
+    label: 'Работает',
+    color: 'bg-green-500',
+    variant: 'default' as const,
+    icon: Wifi
   },
   maintenance: {
-    label: "Обслуживание",
-    color: "bg-yellow-500",
-    variant: "secondary" as const,
-    icon: Wrench,
+    label: 'Обслуживание',
+    color: 'bg-yellow-500',
+    variant: 'secondary' as const,
+    icon: Wrench
   },
   offline: {
-    label: "Не в сети",
-    color: "bg-red-500",
-    variant: "destructive" as const,
-    icon: WifiOff,
-  },
-};
+    label: 'Не в сети',
+    color: 'bg-red-500',
+    variant: 'destructive' as const,
+    icon: WifiOff
+  }
+}
 
 export default function MachinesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const router = useRouter()
 
-  const filteredMachines = machines.filter((machine) => {
+  const filteredMachines = machines.filter(machine => {
     const matchesSearch =
       machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       machine.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.id.toLowerCase().includes(searchTerm.toLowerCase());
+      machine.id.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus =
-      statusFilter === "all" || machine.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+      statusFilter === 'all' || machine.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
   return (
     <>
@@ -162,7 +162,7 @@ export default function MachinesPage() {
                 <Input
                   placeholder="Поиск по названию, локации или ID..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -170,26 +170,26 @@ export default function MachinesPage() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="gap-2 bg-transparent">
                     <Filter className="h-4 w-4" />
-                    Статус:{" "}
-                    {statusFilter === "all"
-                      ? "Все"
+                    Статус:{' '}
+                    {statusFilter === 'all'
+                      ? 'Все'
                       : statusConfig[statusFilter as keyof typeof statusConfig]
                           ?.label}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                  <DropdownMenuItem onClick={() => setStatusFilter('all')}>
                     Все статусы
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter("online")}>
+                  <DropdownMenuItem onClick={() => setStatusFilter('online')}>
                     Работает
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => setStatusFilter("maintenance")}
+                    onClick={() => setStatusFilter('maintenance')}
                   >
                     Обслуживание
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setStatusFilter("offline")}>
+                  <DropdownMenuItem onClick={() => setStatusFilter('offline')}>
                     Не в сети
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -200,13 +200,13 @@ export default function MachinesPage() {
 
         {/* Machines Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredMachines.map((machine) => {
+          {filteredMachines.map(machine => {
             const status =
-              statusConfig[machine.status as keyof typeof statusConfig];
-            const StatusIcon = status.icon;
+              statusConfig[machine.status as keyof typeof statusConfig]
+            const StatusIcon = status.icon
             const fillPercentage = Math.round(
               (machine.filled / machine.capacity) * 100
-            );
+            )
 
             return (
               <Link href={`/machines/${machine.id}`} key={machine.id}>
@@ -243,7 +243,7 @@ export default function MachinesPage() {
                           Доход сегодня
                         </div>
                         <div className="font-semibold">
-                          ₽{machine.revenue.toLocaleString()}
+                          ₸{machine.revenue.toLocaleString()}
                         </div>
                       </div>
                       <div>
@@ -268,10 +268,10 @@ export default function MachinesPage() {
                         <div
                           className={`h-2 rounded-full transition-all ${
                             fillPercentage > 80
-                              ? "bg-green-500"
+                              ? 'bg-green-500'
                               : fillPercentage > 50
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
+                                ? 'bg-yellow-500'
+                                : 'bg-red-500'
                           }`}
                           style={{ width: `${fillPercentage}%` }}
                         />
@@ -286,7 +286,7 @@ export default function MachinesPage() {
                   </CardContent>
                 </Card>
               </Link>
-            );
+            )
           })}
         </div>
 
@@ -310,5 +310,5 @@ export default function MachinesPage() {
         onOpenChange={setIsAddDialogOpen}
       />
     </>
-  );
+  )
 }

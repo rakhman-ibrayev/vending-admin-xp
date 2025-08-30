@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+  CardTitle
+} from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   MapPin,
   Calendar,
@@ -25,57 +25,57 @@ import {
   Clock,
   Activity,
   BarChart3,
-  Edit,
-} from "lucide-react";
-import { MachineRestockDialog } from "@/components/machine-restock-dialog";
+  Edit
+} from 'lucide-react'
+import { MachineRestockDialog } from '@/components/machine-restock-dialog'
 
 // Mock data - в реальном приложении это будет загружаться по ID
 const getMachineById = (id: string) => ({
   id,
   name: `Аппарат ${id.toUpperCase()}`,
-  location: "ТЦ Мега, 1 этаж",
-  status: "online",
-  lastSync: "2 минуты назад",
+  location: 'ТЦ Мега, 1 этаж',
+  status: 'online',
+  lastSync: '2 минуты назад',
   revenue: 15420,
   capacity: 120,
   filled: 89,
   temperature: 4,
-  model: "VendMax Pro 3000",
-  installDate: "2024-01-15",
+  model: 'VendMax Pro 3000',
+  installDate: '2024-01-15',
   slotsCount: 24,
-  slotCapacity: 5,
-});
+  slotCapacity: 5
+})
 
 const statusConfig = {
   online: {
-    label: "Работает",
-    color: "bg-green-500",
-    variant: "default" as const,
-    icon: Wifi,
+    label: 'Работает',
+    color: 'bg-green-500',
+    variant: 'default' as const,
+    icon: Wifi
   },
   maintenance: {
-    label: "Обслуживание",
-    color: "bg-yellow-500",
-    variant: "secondary" as const,
-    icon: Wrench,
+    label: 'Обслуживание',
+    color: 'bg-yellow-500',
+    variant: 'secondary' as const,
+    icon: Wrench
   },
   offline: {
-    label: "Не в сети",
-    color: "bg-red-500",
-    variant: "destructive" as const,
-    icon: WifiOff,
-  },
-};
+    label: 'Не в сети',
+    color: 'bg-red-500',
+    variant: 'destructive' as const,
+    icon: WifiOff
+  }
+}
 
 export default function MachineDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [restockDialogOpen, setRestockDialogOpen] = useState(false);
+  const params = useParams()
+  const router = useRouter()
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
 
-  const machine = getMachineById(params.id as string);
-  const status = statusConfig[machine.status as keyof typeof statusConfig];
-  const StatusIcon = status.icon;
-  const fillPercentage = Math.round((machine.filled / machine.capacity) * 100);
+  const machine = getMachineById(params.id as string)
+  const status = statusConfig[machine.status as keyof typeof statusConfig]
+  const StatusIcon = status.icon
+  const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
 
   return (
     <>
@@ -136,9 +136,9 @@ export default function MachineDetailPage() {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      Установлен:{" "}
+                      Установлен:{' '}
                       {new Date(machine.installDate).toLocaleDateString(
-                        "ru-RU"
+                        'ru-RU'
                       )}
                     </span>
                   </div>
@@ -172,10 +172,10 @@ export default function MachineDetailPage() {
                       <div
                         className={`h-3 rounded-full transition-all ${
                           fillPercentage > 80
-                            ? "bg-green-500"
+                            ? 'bg-green-500'
                             : fillPercentage > 50
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
                         }`}
                         style={{ width: `${fillPercentage}%` }}
                       />
@@ -207,7 +207,7 @@ export default function MachineDetailPage() {
                       </span>
                     </div>
                     <div className="text-2xl font-bold">
-                      ₽{machine.revenue.toLocaleString()}
+                      ₸{machine.revenue.toLocaleString()}
                     </div>
                     <div className="text-sm text-green-600">
                       +12% к вчерашнему дню
@@ -282,5 +282,5 @@ export default function MachineDetailPage() {
         onOpenChange={setRestockDialogOpen}
       />
     </>
-  );
+  )
 }

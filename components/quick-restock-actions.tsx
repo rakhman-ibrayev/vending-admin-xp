@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Package, Zap, AlertTriangle, TrendingUp } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Package, Zap, AlertTriangle, TrendingUp } from 'lucide-react'
 
 interface Product {
   id: string
@@ -19,9 +19,16 @@ interface QuickRestockActionsProps {
   onQuickRestock: (productId: string, quantity: number) => void
 }
 
-export function QuickRestockActions({ products, onQuickRestock }: QuickRestockActionsProps) {
-  const lowStockProducts = products.filter((p) => p.totalStock <= p.lowStockThreshold)
-  const topSellingProducts = products.sort((a, b) => b.salesThisMonth - a.salesThisMonth).slice(0, 3)
+export function QuickRestockActions({
+  products,
+  onQuickRestock
+}: QuickRestockActionsProps) {
+  const lowStockProducts = products.filter(
+    p => p.totalStock <= p.lowStockThreshold
+  )
+  const topSellingProducts = products
+    .sort((a, b) => b.salesThisMonth - a.salesThisMonth)
+    .slice(0, 3)
 
   const getQuickRestockAmount = (product: Product) => {
     const weeklySales = Math.ceil(product.salesThisMonth / 4)
@@ -40,12 +47,17 @@ export function QuickRestockActions({ products, onQuickRestock }: QuickRestockAc
         </CardHeader>
         <CardContent className="space-y-3">
           {lowStockProducts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Все товары в достаточном количестве</p>
+            <p className="text-sm text-muted-foreground">
+              Все товары в достаточном количестве
+            </p>
           ) : (
-            lowStockProducts.slice(0, 3).map((product) => {
+            lowStockProducts.slice(0, 3).map(product => {
               const quickAmount = getQuickRestockAmount(product)
               return (
-                <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={product.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex-1">
                     <div className="font-medium text-sm">{product.name}</div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -55,7 +67,11 @@ export function QuickRestockActions({ products, onQuickRestock }: QuickRestockAc
                       <span>Осталось: {product.totalStock}</span>
                     </div>
                   </div>
-                  <Button size="sm" onClick={() => onQuickRestock(product.id, quickAmount)} className="gap-1">
+                  <Button
+                    size="sm"
+                    onClick={() => onQuickRestock(product.id, quickAmount)}
+                    className="gap-1"
+                  >
                     <Zap className="h-3 w-3" />+{quickAmount}
                   </Button>
                 </div>
@@ -63,7 +79,9 @@ export function QuickRestockActions({ products, onQuickRestock }: QuickRestockAc
             })
           )}
           {lowStockProducts.length > 3 && (
-            <p className="text-xs text-muted-foreground text-center">И еще {lowStockProducts.length - 3} товаров...</p>
+            <p className="text-xs text-muted-foreground text-center">
+              И еще {lowStockProducts.length - 3} товаров...
+            </p>
           )}
         </CardContent>
       </Card>
@@ -77,10 +95,13 @@ export function QuickRestockActions({ products, onQuickRestock }: QuickRestockAc
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {topSellingProducts.map((product) => {
+          {topSellingProducts.map(product => {
             const quickAmount = Math.ceil(product.salesThisMonth / 4) // Недельные продажи
             return (
-              <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div
+                key={product.id}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
                 <div className="flex-1">
                   <div className="font-medium text-sm">{product.name}</div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

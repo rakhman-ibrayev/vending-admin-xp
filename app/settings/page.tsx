@@ -1,22 +1,28 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import { Sidebar } from "@/components/sidebar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Settings, Bell, Shield, Database, Palette, Globe } from "lucide-react"
+import { useState } from 'react'
+import { Sidebar } from '@/components/sidebar'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Switch } from '@/components/ui/switch'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { Settings, Bell, Shield, Database, Palette, Globe } from 'lucide-react'
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState({
     lowStock: true,
     machineOffline: true,
     dailyReports: false,
-    maintenanceAlerts: true,
+    maintenanceAlerts: true
   })
 
   return (
@@ -31,7 +37,9 @@ export default function SettingsPage() {
               <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
                 Настройки системы
               </h1>
-              <p className="text-muted-foreground mt-2">Конфигурация и персонализация админской панели</p>
+              <p className="text-muted-foreground mt-2">
+                Конфигурация и персонализация админской панели
+              </p>
             </div>
           </div>
 
@@ -77,8 +85,12 @@ export default function SettingsPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="moscow">Москва (UTC+3)</SelectItem>
-                          <SelectItem value="spb">Санкт-Петербург (UTC+3)</SelectItem>
-                          <SelectItem value="ekb">Екатеринбург (UTC+5)</SelectItem>
+                          <SelectItem value="spb">
+                            Санкт-Петербург (UTC+3)
+                          </SelectItem>
+                          <SelectItem value="ekb">
+                            Екатеринбург (UTC+5)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -90,7 +102,9 @@ export default function SettingsPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="rub">Российский рубль (₽)</SelectItem>
+                        <SelectItem value="rub">
+                          Российский рубль (₸)
+                        </SelectItem>
                         <SelectItem value="usd">Доллар США ($)</SelectItem>
                         <SelectItem value="eur">Евро (€)</SelectItem>
                       </SelectContent>
@@ -110,14 +124,18 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Темная тема</Label>
-                      <p className="text-sm text-muted-foreground">Переключить на темное оформление</p>
+                      <p className="text-sm text-muted-foreground">
+                        Переключить на темное оформление
+                      </p>
                     </div>
                     <Switch />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Компактный режим</Label>
-                      <p className="text-sm text-muted-foreground">Уменьшить отступы в интерфейсе</p>
+                      <p className="text-sm text-muted-foreground">
+                        Уменьшить отступы в интерфейсе
+                      </p>
                     </div>
                     <Switch />
                   </div>
@@ -134,42 +152,68 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Низкие запасы товаров</Label>
-                      <p className="text-sm text-muted-foreground">Уведомления о товарах с низким запасом</p>
+                      <p className="text-sm text-muted-foreground">
+                        Уведомления о товарах с низким запасом
+                      </p>
                     </div>
                     <Switch
                       checked={notifications.lowStock}
-                      onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, lowStock: checked }))}
+                      onCheckedChange={checked =>
+                        setNotifications(prev => ({
+                          ...prev,
+                          lowStock: checked
+                        }))
+                      }
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Аппараты офлайн</Label>
-                      <p className="text-sm text-muted-foreground">Уведомления о неработающих аппаратах</p>
+                      <p className="text-sm text-muted-foreground">
+                        Уведомления о неработающих аппаратах
+                      </p>
                     </div>
                     <Switch
                       checked={notifications.machineOffline}
-                      onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, machineOffline: checked }))}
+                      onCheckedChange={checked =>
+                        setNotifications(prev => ({
+                          ...prev,
+                          machineOffline: checked
+                        }))
+                      }
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Ежедневные отчеты</Label>
-                      <p className="text-sm text-muted-foreground">Автоматические отчеты о продажах</p>
+                      <p className="text-sm text-muted-foreground">
+                        Автоматические отчеты о продажах
+                      </p>
                     </div>
                     <Switch
                       checked={notifications.dailyReports}
-                      onCheckedChange={(checked) => setNotifications((prev) => ({ ...prev, dailyReports: checked }))}
+                      onCheckedChange={checked =>
+                        setNotifications(prev => ({
+                          ...prev,
+                          dailyReports: checked
+                        }))
+                      }
                     />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Техническое обслуживание</Label>
-                      <p className="text-sm text-muted-foreground">Напоминания о плановом обслуживании</p>
+                      <p className="text-sm text-muted-foreground">
+                        Напоминания о плановом обслуживании
+                      </p>
                     </div>
                     <Switch
                       checked={notifications.maintenanceAlerts}
-                      onCheckedChange={(checked) =>
-                        setNotifications((prev) => ({ ...prev, maintenanceAlerts: checked }))
+                      onCheckedChange={checked =>
+                        setNotifications(prev => ({
+                          ...prev,
+                          maintenanceAlerts: checked
+                        }))
                       }
                     />
                   </div>
@@ -184,20 +228,31 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="session-timeout">Время сессии (минуты)</Label>
-                    <Input id="session-timeout" type="number" defaultValue="60" className="w-32" />
+                    <Label htmlFor="session-timeout">
+                      Время сессии (минуты)
+                    </Label>
+                    <Input
+                      id="session-timeout"
+                      type="number"
+                      defaultValue="60"
+                      className="w-32"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Двухфакторная аутентификация</Label>
-                      <p className="text-sm text-muted-foreground">Дополнительная защита учетных записей</p>
+                      <p className="text-sm text-muted-foreground">
+                        Дополнительная защита учетных записей
+                      </p>
                     </div>
                     <Switch />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Логирование действий</Label>
-                      <p className="text-sm text-muted-foreground">Записывать все действия пользователей</p>
+                      <p className="text-sm text-muted-foreground">
+                        Записывать все действия пользователей
+                      </p>
                     </div>
                     <Switch defaultChecked />
                   </div>
@@ -212,7 +267,9 @@ export default function SettingsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="backup-frequency">Частота резервного копирования</Label>
+                    <Label htmlFor="backup-frequency">
+                      Частота резервного копирования
+                    </Label>
                     <Select defaultValue="daily">
                       <SelectTrigger className="w-48">
                         <SelectValue />
@@ -226,12 +283,19 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="log-retention">Хранение логов (дни)</Label>
-                    <Input id="log-retention" type="number" defaultValue="30" className="w-32" />
+                    <Input
+                      id="log-retention"
+                      type="number"
+                      defaultValue="30"
+                      className="w-32"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <Label>Автоматические обновления</Label>
-                      <p className="text-sm text-muted-foreground">Устанавливать обновления автоматически</p>
+                      <p className="text-sm text-muted-foreground">
+                        Устанавливать обновления автоматически
+                      </p>
                     </div>
                     <Switch />
                   </div>
