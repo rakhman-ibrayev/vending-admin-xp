@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { MapPin, Calendar, Thermometer, Package, TrendingUp, Wifi, WifiOff, Wrench, Clock } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { MapPin, Thermometer, TrendingUp, Wifi, WifiOff, Wrench, ExternalLink } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 interface Machine {
   id: string
@@ -49,15 +49,22 @@ const statusConfig = {
 }
 
 export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDetailsDialogProps) {
+  const router = useRouter()
+
   if (!machine) return null
 
   const status = statusConfig[machine.status as keyof typeof statusConfig]
   const StatusIcon = status.icon
   const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
 
+  const handleViewDetails = () => {
+    onOpenChange(false)
+    router.push(`/machines/${machine.id}`)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -73,122 +80,58 @@ export function MachineDetailsDialog({ machine, open, onOpenChange }: MachineDet
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Basic Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Основная информация</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span>{machine.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
-                <span>Модель: {machine.model}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Установлен: {new Date(machine.installDate).toLocaleDateString("ru-RU")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Последняя синхронизация: {machine.lastSync}</span>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <span>{machine.location}</span>
+          </div>
 
-          {/* Current Status */}
+          {/* Quick Stats */}
           <div className="grid gap-4 md:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Текущий статус</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-4">
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Заполненность</span>
                     <span className="font-semibold">{fillPercentage}%</span>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-3">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className={`h-3 rounded-full transition-all ${
+                      className={`h-2 rounded-full transition-all ${
                         fillPercentage > 80 ? "bg-green-500" : fillPercentage > 50 ? "bg-yellow-500" : "bg-red-500"
                       }`}
                       style={{ width: `${fillPercentage}%` }}
                     />
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {machine.filled} из {machine.capacity} товаров
-                  </div>
                 </div>
-
-                {machine.temperature && (
-                  <div className="flex items-center gap-2">
-                    <Thermometer className="h-4 w-4 text-muted-foreground" />
-                    <span>Температура: {machine.temperature}°C</span>
-                  </div>
-                )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Доходы</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+              <CardContent className="pt-4">
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Сегодня</span>
+                    <span className="text-sm text-muted-foreground">Доходы сегодня</span>
                   </div>
-                  <div className="text-2xl font-bold">₽{machine.revenue.toLocaleString()}</div>
-                  <div className="text-sm text-green-600">+12% к вчерашнему дню</div>
+                  <div className="text-lg font-bold">₽{machine.revenue.toLocaleString()}</div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Последняя активность</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span>Продажа: Кока-Кола 0.5л</span>
-                  <span className="text-muted-foreground">2 мин назад</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span>Продажа: Сникерс</span>
-                  <span className="text-muted-foreground">5 мин назад</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span>Пополнение товаров</span>
-                  <span className="text-muted-foreground">2 часа назад</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between items-center">
-                  <span>Техническое обслуживание</span>
-                  <span className="text-muted-foreground">1 день назад</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {machine.temperature && (
+            <div className="flex items-center gap-2 text-sm">
+              <Thermometer className="h-4 w-4 text-muted-foreground" />
+              <span>Температура: {machine.temperature}°C</span>
+            </div>
+          )}
 
-          {/* Action Buttons */}
           <div className="flex gap-2 pt-4">
-            <Button variant="outline" className="flex-1 bg-transparent">
-              Редактировать
+            <Button className="flex-1" onClick={handleViewDetails}>
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Подробнее
             </Button>
-            <Button variant="outline" className="flex-1 bg-transparent">
-              Техобслуживание
-            </Button>
-            <Button className="flex-1">Пополнить товары</Button>
           </div>
         </div>
       </DialogContent>

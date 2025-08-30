@@ -1,29 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import {
-  Coffee,
-  MapPin,
-  Clock,
-  Plus,
-  Search,
-  Filter,
-  MoreHorizontal,
-  Edit,
-  Trash2,
-  Eye,
-  Wifi,
-  WifiOff,
-  Wrench,
-} from "lucide-react"
+import { Coffee, MapPin, Clock, Plus, Search, Filter, Wifi, WifiOff, Wrench } from "lucide-react"
 import { AddMachineDialog } from "@/components/add-machine-dialog"
-import { MachineDetailsDialog } from "@/components/machine-details-dialog"
 
 // Mock data for vending machines
 const machines = [
@@ -119,8 +105,7 @@ export default function MachinesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [selectedMachine, setSelectedMachine] = useState<(typeof machines)[0] | null>(null)
-  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const router = useRouter()
 
   const filteredMachines = machines.filter((machine) => {
     const matchesSearch =
@@ -131,9 +116,8 @@ export default function MachinesPage() {
     return matchesSearch && matchesStatus
   })
 
-  const handleViewDetails = (machine: (typeof machines)[0]) => {
-    setSelectedMachine(machine)
-    setIsDetailsDialogOpen(true)
+  const handleMachineClick = (machineId: string) => {
+    router.push(`/machines/${machineId}`)
   }
 
   return (
@@ -198,7 +182,11 @@ export default function MachinesPage() {
               const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
 
               return (
-                <Card key={machine.id} className="hover:shadow-lg transition-shadow">
+                <Card
+                  key={machine.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleMachineClick(machine.id)}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
@@ -213,27 +201,6 @@ export default function MachinesPage() {
                           <span className="text-sm text-muted-foreground">{machine.id}</span>
                         </div>
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(machine)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            Подробнее
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Редактировать
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Удалить
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -297,12 +264,6 @@ export default function MachinesPage() {
       </main>
 
       <AddMachineDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
-
-      <MachineDetailsDialog
-        machine={selectedMachine}
-        open={isDetailsDialogOpen}
-        onOpenChange={setIsDetailsDialogOpen}
-      />
     </div>
   )
 }

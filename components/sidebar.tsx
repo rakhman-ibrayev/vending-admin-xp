@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Coffee, BarChart3, Package, Users, Settings, Menu, X, Home, DollarSign, AlertTriangle } from "lucide-react"
+import { Coffee, BarChart3, Package, Users, Settings, Menu, X, Home } from "lucide-react"
 
 const navigation = [
   {
@@ -25,23 +25,13 @@ const navigation = [
   },
   {
     name: "Товары",
-    href: "/products",
+    href: "/inventory",
     icon: Package,
-  },
-  {
-    name: "Доходы",
-    href: "/revenue",
-    icon: DollarSign,
   },
   {
     name: "Пользователи",
     href: "/users",
     icon: Users,
-  },
-  {
-    name: "Уведомления",
-    href: "/alerts",
-    icon: AlertTriangle,
   },
   {
     name: "Настройки",

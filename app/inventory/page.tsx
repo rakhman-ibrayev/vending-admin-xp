@@ -22,6 +22,8 @@ import {
 } from "lucide-react"
 import { AddProductDialog } from "@/components/add-product-dialog"
 import { StockUpdateDialog } from "@/components/stock-update-dialog"
+import { BulkRestockDialog } from "@/components/bulk-restock-dialog"
+import { QuickRestockActions } from "@/components/quick-restock-actions"
 
 // Mock data for inventory
 const products = [
@@ -101,6 +103,7 @@ export default function InventoryPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<(typeof products)[0] | null>(null)
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false)
+  const [isBulkRestockOpen, setIsBulkRestockOpen] = useState(false)
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
@@ -124,6 +127,11 @@ export default function InventoryPage() {
     setIsStockDialogOpen(true)
   }
 
+  const handleQuickRestock = (productId: string, quantity: number) => {
+    console.log("Quick restock:", { productId, quantity, reason: "Быстрое пополнение" })
+    // Здесь будет логика обновления запасов
+  }
+
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
@@ -139,10 +147,16 @@ export default function InventoryPage() {
                 </h1>
                 <p className="text-muted-foreground mt-2">Контроль запасов и управление ассортиментом</p>
               </div>
-              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Добавить товар
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={() => setIsBulkRestockOpen(true)} variant="outline" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  Массовое пополнение
+                </Button>
+                <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Добавить товар
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -192,6 +206,9 @@ export default function InventoryPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Quick Restock Actions */}
+          <QuickRestockActions products={products} onQuickRestock={handleQuickRestock} />
 
           {/* Filters */}
           <Card>
@@ -357,6 +374,8 @@ export default function InventoryPage() {
       <AddProductDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
 
       <StockUpdateDialog product={selectedProduct} open={isStockDialogOpen} onOpenChange={setIsStockDialogOpen} />
+
+      <BulkRestockDialog products={products} open={isBulkRestockOpen} onOpenChange={setIsBulkRestockOpen} />
     </div>
   )
 }
