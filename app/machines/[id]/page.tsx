@@ -1,14 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
-  ArrowLeft,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
   MapPin,
   Calendar,
   Thermometer,
@@ -20,9 +25,9 @@ import {
   Clock,
   Activity,
   BarChart3,
-} from "lucide-react"
-import { MachineRestockDialog } from "@/components/machine-restock-dialog"
-import { Sidebar } from "@/components/sidebar"
+  Edit,
+} from "lucide-react";
+import { MachineRestockDialog } from "@/components/machine-restock-dialog";
 
 // Mock data - в реальном приложении это будет загружаться по ID
 const getMachineById = (id: string) => ({
@@ -37,9 +42,9 @@ const getMachineById = (id: string) => ({
   temperature: 4,
   model: "VendMax Pro 3000",
   installDate: "2024-01-15",
-  slots: 24,
+  slotsCount: 24,
   slotCapacity: 5,
-})
+});
 
 const statusConfig = {
   online: {
@@ -60,44 +65,35 @@ const statusConfig = {
     variant: "destructive" as const,
     icon: WifiOff,
   },
-}
+};
 
 export default function MachineDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false);
 
-  const machine = getMachineById(params.id as string)
-  const status = statusConfig[machine.status as keyof typeof statusConfig]
-  const StatusIcon = status.icon
-  const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
+  const machine = getMachineById(params.id as string);
+  const status = statusConfig[machine.status as keyof typeof statusConfig];
+  const StatusIcon = status.icon;
+  const fillPercentage = Math.round((machine.filled / machine.capacity) * 100);
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
-
       <main className="flex-1 overflow-y-auto">
-        <div className="container mx-auto p-6 space-y-6">
+        <div className="container mx-auto p-5 space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Назад
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">{machine.name}</h1>
-              <div className="flex items-center gap-3 mt-2">
-                <span className="text-muted-foreground">{machine.id}</span>
-                <Badge variant={status.variant} className="gap-1">
-                  <StatusIcon className="h-3 w-3" />
-                  {status.label}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline">Редактировать</Button>
-              <Button variant="outline">Техобслуживание</Button>
-              <Button onClick={() => setRestockDialogOpen(true)}>Пополнить товары</Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">
+              {machine.name}
+            </h1>
+
+            <div className="flex items-center gap-3 mt-2">
+              <span className="text-muted-foreground">{machine.id}</span>
+
+              <Badge variant={status.variant} className="gap-1">
+                <StatusIcon className="h-3 w-3" />
+                {status.label}
+              </Badge>
             </div>
           </div>
 
@@ -121,9 +117,16 @@ export default function MachineDetailPage() {
               {/* Basic Info */}
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Основная информация</CardTitle>
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle className="text-lg">
+                      Основная информация
+                    </CardTitle>
+
+                    <Button variant="ghost">
+                      <Edit />
+                    </Button>
                   </CardHeader>
+
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -135,13 +138,27 @@ export default function MachineDetailPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Установлен: {new Date(machine.installDate).toLocaleDateString("ru-RU")}</span>
+                      <span>
+                        Установлен:{" "}
+                        {new Date(machine.installDate).toLocaleDateString(
+                          "ru-RU"
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
                       <span>Последняя синхронизация: {machine.lastSync}</span>
                     </div>
                   </CardContent>
+
+                  <CardFooter>
+                    <Button
+                      onClick={() => setRestockDialogOpen(true)}
+                      className="w-full"
+                    >
+                      Пополнить товары
+                    </Button>
+                  </CardFooter>
                 </Card>
 
                 <Card>
@@ -157,7 +174,11 @@ export default function MachineDetailPage() {
                       <div className="w-full bg-muted rounded-full h-3">
                         <div
                           className={`h-3 rounded-full transition-all ${
-                            fillPercentage > 80 ? "bg-green-500" : fillPercentage > 50 ? "bg-yellow-500" : "bg-red-500"
+                            fillPercentage > 80
+                              ? "bg-green-500"
+                              : fillPercentage > 50
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
                           }`}
                           style={{ width: `${fillPercentage}%` }}
                         />
@@ -184,10 +205,16 @@ export default function MachineDetailPage() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Сегодня</span>
+                        <span className="text-sm text-muted-foreground">
+                          Сегодня
+                        </span>
                       </div>
-                      <div className="text-2xl font-bold">₽{machine.revenue.toLocaleString()}</div>
-                      <div className="text-sm text-green-600">+12% к вчерашнему дню</div>
+                      <div className="text-2xl font-bold">
+                        ₽{machine.revenue.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-green-600">
+                        +12% к вчерашнему дню
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -196,7 +223,9 @@ export default function MachineDetailPage() {
               {/* Recent Activity */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Последняя активность</CardTitle>
+                  <CardTitle className="text-lg">
+                    Последняя активность
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-sm">
@@ -212,12 +241,16 @@ export default function MachineDetailPage() {
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span>Пополнение товаров</span>
-                      <span className="text-muted-foreground">2 часа назад</span>
+                      <span className="text-muted-foreground">
+                        2 часа назад
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span>Техническое обслуживание</span>
-                      <span className="text-muted-foreground">1 день назад</span>
+                      <span className="text-muted-foreground">
+                        1 день назад
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -230,7 +263,9 @@ export default function MachineDetailPage() {
                   <CardTitle>Аналитика продаж</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Здесь будут графики и детальная аналитика по этому аппарату</p>
+                  <p className="text-muted-foreground">
+                    Здесь будут графики и детальная аналитика по этому аппарату
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -241,7 +276,9 @@ export default function MachineDetailPage() {
                   <CardTitle>История обслуживания</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Здесь будет история технического обслуживания</p>
+                  <p className="text-muted-foreground">
+                    Здесь будет история технического обслуживания
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -249,7 +286,11 @@ export default function MachineDetailPage() {
         </div>
       </main>
 
-      <MachineRestockDialog machine={machine} open={restockDialogOpen} onOpenChange={setRestockDialogOpen} />
+      <MachineRestockDialog
+        machine={machine}
+        open={restockDialogOpen}
+        onOpenChange={setRestockDialogOpen}
+      />
     </div>
-  )
+  );
 }

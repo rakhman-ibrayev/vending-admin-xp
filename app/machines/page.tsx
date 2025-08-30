@@ -1,15 +1,30 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Sidebar } from "@/components/sidebar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Coffee, MapPin, Clock, Plus, Search, Filter, Wifi, WifiOff, Wrench } from "lucide-react"
-import { AddMachineDialog } from "@/components/add-machine-dialog"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Coffee,
+  MapPin,
+  Clock,
+  Plus,
+  Search,
+  Filter,
+  Wifi,
+  WifiOff,
+  Wrench,
+} from "lucide-react";
+import { AddMachineDialog } from "@/components/add-machine-dialog";
+import Link from "next/link";
 
 // Mock data for vending machines
 const machines = [
@@ -78,7 +93,7 @@ const machines = [
     model: "VendMax Standard 2500",
     installDate: "2024-01-28",
   },
-]
+];
 
 const statusConfig = {
   online: {
@@ -99,43 +114,43 @@ const statusConfig = {
     variant: "destructive" as const,
     icon: WifiOff,
   },
-}
+};
 
 export default function MachinesPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const router = useRouter()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const router = useRouter();
 
   const filteredMachines = machines.filter((machine) => {
     const matchesSearch =
       machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       machine.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.id.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || machine.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const handleMachineClick = (machineId: string) => {
-    router.push(`/machines/${machineId}`)
-  }
+      machine.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || machine.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar />
-
-      <main className="flex-1 md:ml-64 p-4 md:p-8">
+      <main className="flex-1 p-5">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
-          <div className="mt-12 md:mt-0">
+          <div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
                   Управление аппаратами
                 </h1>
-                <p className="text-muted-foreground mt-2">Мониторинг и управление всеми вендинговыми аппаратами</p>
+                <p className="text-muted-foreground mt-2">
+                  Мониторинг и управление всеми вендинговыми аппаратами
+                </p>
               </div>
-              <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+              <Button
+                onClick={() => setIsAddDialogOpen(true)}
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
                 Добавить аппарат
               </Button>
@@ -160,14 +175,30 @@ export default function MachinesPage() {
                     <Button variant="outline" className="gap-2 bg-transparent">
                       <Filter className="h-4 w-4" />
                       Статус:{" "}
-                      {statusFilter === "all" ? "Все" : statusConfig[statusFilter as keyof typeof statusConfig]?.label}
+                      {statusFilter === "all"
+                        ? "Все"
+                        : statusConfig[
+                            statusFilter as keyof typeof statusConfig
+                          ]?.label}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setStatusFilter("all")}>Все статусы</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter("online")}>Работает</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter("maintenance")}>Обслуживание</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setStatusFilter("offline")}>Не в сети</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                      Все статусы
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setStatusFilter("online")}>
+                      Работает
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setStatusFilter("maintenance")}
+                    >
+                      Обслуживание
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setStatusFilter("offline")}
+                    >
+                      Не в сети
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -177,77 +208,92 @@ export default function MachinesPage() {
           {/* Machines Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredMachines.map((machine) => {
-              const status = statusConfig[machine.status as keyof typeof statusConfig]
-              const StatusIcon = status.icon
-              const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
+              const status =
+                statusConfig[machine.status as keyof typeof statusConfig];
+              const StatusIcon = status.icon;
+              const fillPercentage = Math.round(
+                (machine.filled / machine.capacity) * 100
+              );
 
               return (
-                <Card
-                  key={machine.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => handleMachineClick(machine.id)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="text-lg font-[family-name:var(--font-work-sans)]">
-                          {machine.name}
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={status.variant} className="gap-1">
-                            <StatusIcon className="h-3 w-3" />
-                            {status.label}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">{machine.id}</span>
+                <Link href={`/machines/${machine.id}`} key={machine.id}>
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg font-[family-name:var(--font-work-sans)]">
+                            {machine.name}
+                          </CardTitle>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={status.variant} className="gap-1">
+                              <StatusIcon className="h-3 w-3" />
+                              {status.label}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {machine.id}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Location */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span className="truncate">{machine.location}</span>
-                    </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Location */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span className="truncate">{machine.location}</span>
+                      </div>
 
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <div className="text-muted-foreground">Доход сегодня</div>
-                        <div className="font-semibold">₽{machine.revenue.toLocaleString()}</div>
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <div className="text-muted-foreground">
+                            Доход сегодня
+                          </div>
+                          <div className="font-semibold">
+                            ₽{machine.revenue.toLocaleString()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-muted-foreground">
+                            Заполненность
+                          </div>
+                          <div className="font-semibold">{fillPercentage}%</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-muted-foreground">Заполненность</div>
-                        <div className="font-semibold">{fillPercentage}%</div>
-                      </div>
-                    </div>
 
-                    {/* Fill Level Bar */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>
-                          Товары: {machine.filled}/{machine.capacity}
-                        </span>
-                        {machine.temperature && <span>Температура: {machine.temperature}°C</span>}
+                      {/* Fill Level Bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>
+                            Товары: {machine.filled}/{machine.capacity}
+                          </span>
+                          {machine.temperature && (
+                            <span>Температура: {machine.temperature}°C</span>
+                          )}
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all ${
+                              fillPercentage > 80
+                                ? "bg-green-500"
+                                : fillPercentage > 50
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                            style={{ width: `${fillPercentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full transition-all ${
-                            fillPercentage > 80 ? "bg-green-500" : fillPercentage > 50 ? "bg-yellow-500" : "bg-red-500"
-                          }`}
-                          style={{ width: `${fillPercentage}%` }}
-                        />
-                      </div>
-                    </div>
 
-                    {/* Last Sync */}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
-                      <Clock className="h-3 w-3" />
-                      Последняя синхронизация: {machine.lastSync}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
+                      {/* Last Sync */}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
+                        <Clock className="h-3 w-3" />
+                        Последняя синхронизация: {machine.lastSync}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
             })}
           </div>
 
@@ -255,15 +301,23 @@ export default function MachinesPage() {
             <Card>
               <CardContent className="p-12 text-center">
                 <Coffee className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Аппараты не найдены</h3>
-                <p className="text-muted-foreground">Попробуйте изменить параметры поиска или добавить новый аппарат</p>
+                <h3 className="text-lg font-semibold mb-2">
+                  Аппараты не найдены
+                </h3>
+                <p className="text-muted-foreground">
+                  Попробуйте изменить параметры поиска или добавить новый
+                  аппарат
+                </p>
               </CardContent>
             </Card>
           )}
         </div>
       </main>
 
-      <AddMachineDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      <AddMachineDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+      />
     </div>
-  )
+  );
 }
