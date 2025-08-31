@@ -126,20 +126,26 @@ export function Sidebar({ user }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="px-6 py-4 border-t border-sidebar-border">
-            <Card className="flex justify-between">
-              <p>{user.email}</p>
+          <div className="p-6 border-t border-sidebar-border space-y-4">
+            <Card className="flex items-center gap-4 px-4 py-3 bg-muted/60 border-none shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/80 text-white font-bold text-lg">
+                {user.email[0]?.toUpperCase() ?? 'U'}
+              </div>
+
+              <p className="text-sm font-semibold truncate">{user.email}</p>
 
               <Button
-                onClick={() => {
-                  supabase.auth.signOut()
+                onClick={async () => {
+                  await supabase.auth.signOut()
                   redirect('/login')
                 }}
-                variant="destructive"
-                className="size-8"
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:bg-destructive/20 transition"
                 title="Выйти из аккаунта"
+                aria-label="Выйти"
               >
-                <LogOut />
+                <LogOut className="size-5" />
               </Button>
             </Card>
 
