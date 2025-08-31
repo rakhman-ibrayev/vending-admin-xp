@@ -87,7 +87,7 @@ export default function UsersPage() {
     <main>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="mt-12 md:mt-0">
+        <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
