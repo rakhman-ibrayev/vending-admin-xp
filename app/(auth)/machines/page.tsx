@@ -132,7 +132,7 @@ export default function MachinesPage() {
 
   return (
     <>
-      <main className="flex-1 p-5 space-y-6">
+      <main className="space-y-6">
         {/* Header */}
         <div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

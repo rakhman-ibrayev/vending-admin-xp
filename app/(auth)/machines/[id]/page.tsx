@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -69,7 +69,6 @@ const statusConfig = {
 
 export default function MachineDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
 
   const machine = getMachineById(params.id as string)
@@ -79,7 +78,7 @@ export default function MachineDetailPage() {
 
   return (
     <>
-      <main className="flex-1 p-5 space-y-6">
+      <main className="space-y-6">
         {/* Header */}
         <div className="flex-1">
           <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">

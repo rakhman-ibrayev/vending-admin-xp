@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,8 +13,11 @@ import {
   Settings,
   Menu,
   X,
-  Home
+  Home,
+  LogOut
 } from 'lucide-react'
+import { Card } from './ui/card'
+import { createClient } from '@/lib/supabase/client'
 
 const navigation = [
   {
@@ -49,14 +52,21 @@ const navigation = [
   }
 ]
 
-export function Sidebar() {
+export interface SidebarProps {
+  user: {
+    email: string
+  }
+}
+
+export function Sidebar({ user }: SidebarProps) {
+  const supabase = createClient()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
   return (
     <>
       {/* Mobile menu button */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
+      <div className="fixed bottom-4 right-4 z-50 md:hidden">
         <Button
           variant="outline"
           size="icon"
@@ -80,16 +90,14 @@ export function Sidebar() {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center gap-2 px-6 py-4 border-b border-sidebar-border">
-            <Coffee className="h-8 w-8 text-sidebar-primary" />
-            <div>
-              <h1 className="text-lg font-bold text-sidebar-foreground">
-                VendAdmin
-              </h1>
-              <p className="text-xs text-sidebar-foreground/60">
-                Панель управления
-              </p>
-            </div>
+          <div className="px-6 py-4 border-b border-sidebar-border">
+            <h1 className="text-lg font-bold text-sidebar-foreground">
+              PharmExpress
+            </h1>
+
+            <p className="text-xs text-sidebar-foreground/60">
+              Панель управления
+            </p>
           </div>
 
           {/* Navigation */}
@@ -119,8 +127,24 @@ export function Sidebar() {
 
           {/* Footer */}
           <div className="px-6 py-4 border-t border-sidebar-border">
+            <Card className="flex justify-between">
+              <p>{user.email}</p>
+
+              <Button
+                onClick={() => {
+                  supabase.auth.signOut()
+                  redirect('/login')
+                }}
+                variant="destructive"
+                className="size-8"
+                title="Выйти из аккаунта"
+              >
+                <LogOut />
+              </Button>
+            </Card>
+
             <div className="text-xs text-sidebar-foreground/60">
-              © 2024 VendAdmin
+              © 2024 PharmExpress
             </div>
           </div>
         </div>

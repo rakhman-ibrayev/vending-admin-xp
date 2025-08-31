@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Sidebar } from '@/components/sidebar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -155,10 +154,8 @@ export default function InventoryPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-
-      <main className="flex-1 md:ml-64 p-4 md:p-8">
+    <>
+      <main>
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
           <div className="mt-12 md:mt-0">
@@ -476,6 +473,6 @@ export default function InventoryPage() {
         open={isBulkRestockOpen}
         onOpenChange={setIsBulkRestockOpen}
       />
-    </div>
+    </>
   )
 }
