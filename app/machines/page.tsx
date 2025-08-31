@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -120,7 +119,6 @@ export default function MachinesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const router = useRouter()
 
   const filteredMachines = machines.filter(machine => {
     const matchesSearch =
@@ -155,7 +153,7 @@ export default function MachinesPage() {
 
         {/* Filters and Search */}
         <Card>
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />

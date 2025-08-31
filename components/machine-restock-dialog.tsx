@@ -25,7 +25,6 @@ import {
   Minus,
   Package,
   AlertTriangle,
-  Grid3X3,
   ShoppingCart,
   Trash2,
   Edit3
@@ -97,6 +96,38 @@ const getMachineSlots = (machine: Machine): MachineSlot[] => {
   }
 
   return slots
+}
+
+interface ProductSelectorProps {
+  onValueChange: (value: string) => void
+  onCancelClick: () => void
+}
+
+function ProductSelector({
+  onValueChange,
+  onCancelClick
+}: ProductSelectorProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <Select onValueChange={onValueChange}>
+        <SelectTrigger className="w-48">
+          <SelectValue placeholder="Выберите товар" />
+        </SelectTrigger>
+
+        <SelectContent>
+          {mockProducts.map(product => (
+            <SelectItem key={product.id} value={product.id}>
+              {product.name} - ₸{product.price}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Button variant="ghost" size="sm" onClick={onCancelClick}>
+        Отмена
+      </Button>
+    </div>
+  )
 }
 
 export function MachineRestockDialog({
@@ -240,12 +271,12 @@ export function MachineRestockDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="!w-[1000px] !max-w-[95%] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-[family-name:var(--font-work-sans)] text-xl flex items-center gap-2">
-            <Grid3X3 className="h-5 w-5" />
             Управление товарами - {machine.name}
           </DialogTitle>
+
           <DialogDescription>
             Управление слотами аппарата в {machine.location}. Вы можете менять
             товары, пополнять запасы и управлять ассортиментом.
@@ -263,6 +294,7 @@ export function MachineRestockDialog({
               <AlertTriangle className="h-4 w-4" />
               Пополнить товары с низким запасом
             </Button>
+
             <Badge variant="secondary" className="px-3 py-1">
               Слотов: {machine.slotsCount} | Вместимость: {machine.slotCapacity}{' '}
               шт/слот
@@ -276,7 +308,7 @@ export function MachineRestockDialog({
               Слоты аппарата
             </h3>
 
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {machineSlots.map(slot => {
                 const restockQty = restockQuantities[slot.slotNumber] || 0
                 const product = getSlotProduct(slot)
@@ -286,23 +318,63 @@ export function MachineRestockDialog({
                 const isEmpty = !product
                 const maxPossible = slot.maxCapacity - currentStock
                 const isEditing = editingSlot === slot.slotNumber
-                const hasChanges = slotChanges[slot.slotNumber]
 
                 return (
                   <Card
                     key={slot.slotNumber}
-                    className={`${
+                    className={`p-3 ${
                       isEmpty
                         ? 'border-gray-200 bg-gray-50/50'
                         : isLowStock
                           ? 'border-orange-200 bg-orange-50/50'
-                          : hasChanges
-                            ? 'border-blue-200 bg-blue-50/50'
-                            : ''
+                          : ''
                     }`}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
+                    <CardContent className="p-0">
+                      <div className="flex flex-col gap-3">
+                        {!isEmpty && (
+                          <div className="flex items-center gap-2">
+                            {!isEditing && (
+                              <>
+                                <h4 className="font-medium">{product!.name}</h4>
+
+                                <div className="ml-auto">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      setEditingSlot(slot.slotNumber)
+                                    }
+                                    className="text-xs"
+                                  >
+                                    <Edit3 className="h-3 w-3" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                      removeSlotProduct(slot.slotNumber)
+                                    }
+                                    className="text-xs text-red-600 hover:text-red-700"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </>
+                            )}
+
+                            {isEditing && (
+                              <ProductSelector
+                                onValueChange={value =>
+                                  changeSlotProduct(slot.slotNumber, value)
+                                }
+                                onCancelClick={() => setEditingSlot(null)}
+                              />
+                            )}
+                          </div>
+                        )}
+
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <Badge
@@ -312,44 +384,24 @@ export function MachineRestockDialog({
                               {slot.slotNumber}
                             </Badge>
 
-                            {isEmpty ? (
+                            {isEmpty && (
                               <div className="flex items-center gap-2">
-                                <span className="text-muted-foreground">
-                                  Пустой слот
-                                </span>
-                                {isEditing ? (
-                                  <div className="flex items-center gap-2">
-                                    <Select
-                                      onValueChange={value =>
-                                        changeSlotProduct(
-                                          slot.slotNumber,
-                                          value
-                                        )
-                                      }
-                                    >
-                                      <SelectTrigger className="w-48">
-                                        <SelectValue placeholder="Выберите товар" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {mockProducts.map(product => (
-                                          <SelectItem
-                                            key={product.id}
-                                            value={product.id}
-                                          >
-                                            {product.name} - ₸{product.price}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setEditingSlot(null)}
-                                    >
-                                      Отмена
-                                    </Button>
-                                  </div>
-                                ) : (
+                                {!isEditing && (
+                                  <span className="text-muted-foreground">
+                                    Пустой слот
+                                  </span>
+                                )}
+
+                                {isEditing && (
+                                  <ProductSelector
+                                    onValueChange={value =>
+                                      changeSlotProduct(slot.slotNumber, value)
+                                    }
+                                    onCancelClick={() => setEditingSlot(null)}
+                                  />
+                                )}
+
+                                {!isEditing && (
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -363,27 +415,13 @@ export function MachineRestockDialog({
                                   </Button>
                                 )}
                               </div>
-                            ) : (
-                              <>
-                                <h4 className="font-medium">{product!.name}</h4>
-                                <Badge variant="secondary" className="text-xs">
-                                  {product!.category}
-                                </Badge>
-                                {isLowStock && (
-                                  <Badge
-                                    variant="destructive"
-                                    className="text-xs"
-                                  >
-                                    <AlertTriangle className="h-3 w-3 mr-1" />
-                                    Низкий запас
-                                  </Badge>
-                                )}
-                                {hasChanges && (
-                                  <Badge variant="default" className="text-xs">
-                                    Изменен
-                                  </Badge>
-                                )}
-                              </>
+                            )}
+
+                            {!isEmpty && isLowStock && (
+                              <Badge variant="destructive" className="text-xs">
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                Низкий запас
+                              </Badge>
                             )}
                           </div>
 
@@ -393,11 +431,10 @@ export function MachineRestockDialog({
                                 <span>
                                   Запас: {currentStock} / {slot.maxCapacity}
                                 </span>
+
                                 <span>Цена: ₸{product!.price}</span>
-                                <span>
-                                  Закупка: ₸{Math.round(product!.price * 0.6)}
-                                </span>
                               </div>
+
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
                                   className={`h-2 rounded-full ${isLowStock ? 'bg-orange-500' : 'bg-green-500'}`}
@@ -411,60 +448,6 @@ export function MachineRestockDialog({
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {!isEmpty && !isEditing && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingSlot(slot.slotNumber)}
-                                className="text-xs"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  removeSlotProduct(slot.slotNumber)
-                                }
-                                className="text-xs text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </>
-                          )}
-
-                          {isEditing && !isEmpty && (
-                            <div className="flex items-center gap-2">
-                              <Select
-                                onValueChange={value =>
-                                  changeSlotProduct(slot.slotNumber, value)
-                                }
-                              >
-                                <SelectTrigger className="w-48">
-                                  <SelectValue placeholder="Выберите товар" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {mockProducts.map(product => (
-                                    <SelectItem
-                                      key={product.id}
-                                      value={product.id}
-                                    >
-                                      {product.name} - ₸{product.price}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setEditingSlot(null)}
-                              >
-                                Отмена
-                              </Button>
-                            </div>
-                          )}
-
                           {!isEmpty && !isEditing && (
                             <>
                               <Button
@@ -487,6 +470,7 @@ export function MachineRestockDialog({
                                 >
                                   <Minus className="h-3 w-3" />
                                 </Button>
+
                                 <Input
                                   type="number"
                                   value={restockQty}
@@ -497,6 +481,7 @@ export function MachineRestockDialog({
                                   min="0"
                                   max={maxPossible}
                                 />
+
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -507,11 +492,6 @@ export function MachineRestockDialog({
                                 >
                                   <Plus className="h-3 w-3" />
                                 </Button>
-                              </div>
-
-                              <div className="text-sm text-muted-foreground w-20 text-right">
-                                {restockQty > 0 &&
-                                  `₸${Math.round(restockQty * product!.price * 0.6)}`}
                               </div>
                             </>
                           )}
@@ -533,10 +513,12 @@ export function MachineRestockDialog({
                   Итого изменений
                 </CardTitle>
               </CardHeader>
+
               <CardContent className="space-y-2">
                 {Object.keys(slotChanges).length > 0 && (
                   <div className="space-y-1">
                     <div className="font-medium">Изменения товаров:</div>
+
                     {Object.entries(slotChanges).map(([slotNum, change]) => (
                       <div
                         key={slotNum}
@@ -554,12 +536,16 @@ export function MachineRestockDialog({
                 {totalItems > 0 && (
                   <>
                     <Separator />
+
                     <div className="flex justify-between">
                       <span>Товаров к пополнению:</span>
+
                       <span className="font-semibold">{totalItems} шт.</span>
                     </div>
+
                     <div className="flex justify-between">
                       <span>Стоимость пополнения:</span>
+
                       <span className="font-semibold">
                         ₸{totalCost.toLocaleString()}
                       </span>
@@ -579,6 +565,7 @@ export function MachineRestockDialog({
             >
               Отмена
             </Button>
+
             <Button
               onClick={handleRestock}
               disabled={
