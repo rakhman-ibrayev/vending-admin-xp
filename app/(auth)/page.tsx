@@ -10,7 +10,6 @@ import {
   DollarSign,
   Package
 } from 'lucide-react'
-import { SidebarLayout } from '@/components/sidebar-layout'
 
 // Mock data for dashboard
 const stats = [

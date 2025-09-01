@@ -1,13 +1,9 @@
 'use client'
 
-import type React from 'react'
-
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle
@@ -16,216 +12,345 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+  ErrorMessage,
+  useFormik,
+  FormikProvider,
+  type FormikConfig
+} from 'formik'
+import * as Yup from 'yup'
+
+export interface FormData {
+  serial_number: string
+  name: string
+  location: string
+  description: string
+  baud_rate: number
+  device_path: string
+  parity: number
+  data_bits: number
+  stop_bits: number
+  target_temperature: number
+  latitude?: string
+  longitude?: string
+  num_slots: number
+  technician_password: string
+}
+
+const initialValues: FormData = {
+  serial_number: '',
+  name: '',
+  location: '',
+  description: '',
+  baud_rate: 9600,
+  device_path: '/dev/ttyS1',
+  parity: 0,
+  data_bits: 8,
+  stop_bits: 1,
+  target_temperature: 4,
+  latitude: '',
+  longitude: '',
+  num_slots: 120,
+  technician_password: ''
+}
+
+const validationSchema = Yup.object().shape({
+  serial_number: Yup.string().required('Обязательное поле'),
+  name: Yup.string().required('Обязательное поле'),
+  location: Yup.string().required('Обязательное поле'),
+  description: Yup.string(),
+  baud_rate: Yup.number().required('Обязательное поле'),
+  device_path: Yup.string().required('Обязательное поле'),
+  parity: Yup.number().required('Обязательное поле'),
+  data_bits: Yup.number().required('Обязательное поле'),
+  stop_bits: Yup.number().required('Обязательное поле'),
+  target_temperature: Yup.number().required('Обязательное поле'),
+  latitude: Yup.string(),
+  longitude: Yup.string(),
+  num_slots: Yup.number().min(1, 'Минимум 1').required('Обязательное поле'),
+  technician_password: Yup.string().required('Обязательное поле')
+})
 
 interface AddMachineDialogProps {
   open: boolean
-  onOpenChange: (open: boolean) => void
+  onClose: () => void
+  defaultValues?: Partial<FormData>
+  onSubmit: FormikConfig<FormData>['onSubmit']
 }
 
 export function AddMachineDialog({
   open,
-  onOpenChange
+  onClose,
+  defaultValues,
+  onSubmit
 }: AddMachineDialogProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    location: '',
-    model: '',
-    slotsCount: '20',
-    slotCapacity: '10',
-    description: ''
+  const formik = useFormik<FormData>({
+    initialValues: { ...initialValues, ...defaultValues },
+    validationSchema,
+    onSubmit
   })
 
-  const [showSlotPreview, setShowSlotPreview] = useState(false)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Here you would typically send the data to your API
-    console.log('Adding machine:', formData)
-    onOpenChange(false)
-    // Reset form
-    setFormData({
-      name: '',
-      location: '',
-      model: '',
-      slotsCount: '20',
-      slotCapacity: '10',
-      description: ''
-    })
-    setShowSlotPreview(false)
-  }
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-[family-name:var(--font-work-sans)]">
             Добавить новый аппарат
           </DialogTitle>
-          <DialogDescription>
-            Заполните информацию о новом вендинговом аппарате
-          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Название аппарата</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, name: e.target.value }))
-              }
-              placeholder="Например: Мега Центр #1"
-              required
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location">Местоположение</Label>
-            <Input
-              id="location"
-              value={formData.location}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, location: e.target.value }))
-              }
-              placeholder="Например: ТЦ Мега, 1 этаж, вход А"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="model">Модель аппарата</Label>
-            <Select
-              onValueChange={value =>
-                setFormData(prev => ({ ...prev, model: value }))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите модель" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="vendmax-standard-2500">
-                  VendMax Standard 2500
-                </SelectItem>
-                <SelectItem value="vendmax-pro-3000">
-                  VendMax Pro 3000
-                </SelectItem>
-                <SelectItem value="vendmax-premium-4000">
-                  VendMax Premium 4000
-                </SelectItem>
-                <SelectItem value="other">Другая модель</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <FormikProvider value={formik}>
+          <form onSubmit={formik.handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="slotsCount">Количество слотов</Label>
+              <Label htmlFor="serial_number">Серийный номер *</Label>
               <Input
-                id="slotsCount"
+                id="serial_number"
+                name="serial_number"
+                value={formik.values.serial_number}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="SN123456"
+              />
+              <ErrorMessage
+                name="serial_number"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="name">Название аппарата *</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formik.values.name}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Например: Мега Центр #1"
+              />
+              <ErrorMessage
+                name="name"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="location">Местоположение *</Label>
+              <Input
+                id="location"
+                name="location"
+                value={formik.values.location}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Например: ТЦ Мега, 1 этаж, вход А"
+              />
+              <ErrorMessage
+                name="location"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Широта</Label>
+              <Input
+                id="latitude"
+                name="latitude"
+                value={formik.values.latitude}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              <ErrorMessage
+                name="latitude"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">Долгота</Label>
+              <Input
+                id="longitude"
+                name="longitude"
+                value={formik.values.longitude}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              <ErrorMessage
+                name="longitude"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="num_slots">Количество слотов *</Label>
+              <Input
+                id="num_slots"
+                name="num_slots"
                 type="number"
-                value={formData.slotsCount}
-                onChange={e =>
-                  setFormData(prev => ({ ...prev, slotsCount: e.target.value }))
-                }
+                value={formik.values.num_slots}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
                 placeholder="20"
-                min="1"
-                max="100"
-                required
+              />
+              <ErrorMessage
+                name="num_slots"
+                component="div"
+                className="text-destructive text-xs"
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="slotCapacity">Вместимость каждого слота</Label>
+              <Label htmlFor="technician_password">Пароль техника *</Label>
               <Input
-                id="slotCapacity"
-                type="number"
-                value={formData.slotCapacity}
-                onChange={e =>
-                  setFormData(prev => ({
-                    ...prev,
-                    slotCapacity: e.target.value
-                  }))
-                }
-                placeholder="10"
-                min="1"
-                max="50"
-                required
+                id="technician_password"
+                name="technician_password"
+                type="password"
+                value={formik.values.technician_password}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Пароль для сервисного доступа"
+              />
+              <ErrorMessage
+                name="technician_password"
+                component="div"
+                className="text-destructive text-xs"
               />
             </div>
-          </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSlotPreview(!showSlotPreview)}
-            >
-              {showSlotPreview ? 'Скрыть' : 'Показать'} схему слотов
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Всего товаров:{' '}
-              {Number(formData.slotsCount) * Number(formData.slotCapacity)}
-            </span>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Дополнительная информация</Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={formik.values.description}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Особенности установки, контактная информация и т.д."
+                rows={3}
+              />
+              <ErrorMessage
+                name="description"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
 
-          {showSlotPreview && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Схема слотов аппарата</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto">
-                  {Array.from(
-                    { length: Number(formData.slotsCount) || 0 },
-                    (_, i) => (
-                      <div
-                        key={i + 1}
-                        className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-xs font-medium bg-gray-50"
-                      >
-                        {i + 1}
-                      </div>
-                    )
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Каждый слот может содержать до {formData.slotCapacity} единиц
-                  товара
-                </p>
-              </CardContent>
-            </Card>
-          )}
+            <div className="space-y-2">
+              <Label htmlFor="target_temperature">Температура (°C) *</Label>
+              <Input
+                id="target_temperature"
+                name="target_temperature"
+                type="number"
+                value={formik.values.target_temperature}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              <ErrorMessage
+                name="target_temperature"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Дополнительная информация</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, description: e.target.value }))
-              }
-              placeholder="Особенности установки, контактная информация и т.д."
-              rows={3}
-            />
-          </div>
+            {/* Advanced fields */}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="baud_rate">Baud Rate *</Label>
+                <Input
+                  id="baud_rate"
+                  name="baud_rate"
+                  type="number"
+                  value={formik.values.baud_rate}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <ErrorMessage
+                  name="baud_rate"
+                  component="div"
+                  className="text-destructive text-xs"
+                />
+              </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Отмена
-            </Button>
-            <Button type="submit">Добавить аппарат</Button>
-          </DialogFooter>
-        </form>
+              <div className="space-y-2">
+                <Label htmlFor="parity">Parity *</Label>
+                <Input
+                  id="parity"
+                  name="parity"
+                  type="number"
+                  value={formik.values.parity}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <ErrorMessage
+                  name="parity"
+                  component="div"
+                  className="text-destructive text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="data_bits">Data Bits *</Label>
+                <Input
+                  id="data_bits"
+                  name="data_bits"
+                  type="number"
+                  value={formik.values.data_bits}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <ErrorMessage
+                  name="data_bits"
+                  component="div"
+                  className="text-destructive text-xs"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="stop_bits">Stop Bits *</Label>
+                <Input
+                  id="stop_bits"
+                  name="stop_bits"
+                  type="number"
+                  value={formik.values.stop_bits}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+                <ErrorMessage
+                  name="stop_bits"
+                  component="div"
+                  className="text-destructive text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="device_path">Device Path *</Label>
+              <Input
+                id="device_path"
+                name="device_path"
+                value={formik.values.device_path}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+              <ErrorMessage
+                name="device_path"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <DialogFooter className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Отмена
+              </Button>
+
+              <Button type="submit" disabled={formik.isSubmitting}>
+                {formik.isSubmitting ? 'Сохраняем...' : 'Добавить'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </FormikProvider>
       </DialogContent>
     </Dialog>
   )
