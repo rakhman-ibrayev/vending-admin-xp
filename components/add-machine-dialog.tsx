@@ -23,15 +23,15 @@ export interface FormData {
   serial_number: string
   name: string
   location: string
-  description: string
+  description?: string
   baud_rate: number
   device_path: string
   parity: number
   data_bits: number
   stop_bits: number
   target_temperature: number
-  latitude?: string
-  longitude?: string
+  latitude?: number
+  longitude?: number
   num_slots: number
   technician_password: string
 }
@@ -40,15 +40,12 @@ const initialValues: FormData = {
   serial_number: '',
   name: '',
   location: '',
-  description: '',
   baud_rate: 9600,
   device_path: '/dev/ttyS1',
   parity: 0,
   data_bits: 8,
   stop_bits: 1,
   target_temperature: 4,
-  latitude: '',
-  longitude: '',
   num_slots: 120,
   technician_password: ''
 }
@@ -64,8 +61,8 @@ const validationSchema = Yup.object().shape({
   data_bits: Yup.number().required('Обязательное поле'),
   stop_bits: Yup.number().required('Обязательное поле'),
   target_temperature: Yup.number().required('Обязательное поле'),
-  latitude: Yup.string(),
-  longitude: Yup.string(),
+  latitude: Yup.number(),
+  longitude: Yup.number(),
   num_slots: Yup.number().min(1, 'Минимум 1').required('Обязательное поле'),
   technician_password: Yup.string().required('Обязательное поле')
 })
@@ -205,7 +202,6 @@ export function AddMachineDialog({
               <Input
                 id="technician_password"
                 name="technician_password"
-                type="password"
                 value={formik.values.technician_password}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}

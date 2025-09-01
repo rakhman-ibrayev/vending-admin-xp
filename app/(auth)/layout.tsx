@@ -1,4 +1,5 @@
 import { AuthRestrict } from '@/components/auth-restrict'
+import { ReactQueryClientProvider } from '@/components/react-query-client-provider'
 import { SidebarLayout } from '@/components/sidebar-layout'
 
 export default function AuthLayout({
@@ -7,8 +8,10 @@ export default function AuthLayout({
   children: React.ReactNode
 }>) {
   return (
-    <AuthRestrict>
-      <SidebarLayout>{children}</SidebarLayout>
-    </AuthRestrict>
+    <ReactQueryClientProvider>
+      <AuthRestrict>
+        <SidebarLayout>{children}</SidebarLayout>
+      </AuthRestrict>
+    </ReactQueryClientProvider>
   )
 }

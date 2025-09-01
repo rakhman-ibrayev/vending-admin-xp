@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,23 +28,11 @@ import {
   Edit
 } from 'lucide-react'
 import { MachineRestockDialog } from '@/components/machine-restock-dialog'
-
-// Mock data - в реальном приложении это будет загружаться по ID
-const getMachineById = (id: string) => ({
-  id,
-  name: `Аппарат ${id.toUpperCase()}`,
-  location: 'ТЦ Мега, 1 этаж',
-  status: 'online',
-  lastSync: '2 минуты назад',
-  revenue: 15420,
-  capacity: 120,
-  filled: 89,
-  temperature: 4,
-  model: 'VendMax Pro 3000',
-  installDate: '2024-01-15',
-  slotsCount: 24,
-  slotCapacity: 5
-})
+import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
+import { MachineStatus } from '@/components/machine-status'
+import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
+import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
+import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
 
 const statusConfig = {
   online: {
@@ -68,31 +56,49 @@ const statusConfig = {
 }
 
 export default function MachineDetailPage() {
+  const { startDate, endDate } = getTodayRange()
+
   const params = useParams()
+  const machineQuery = useVendingMachine(Number(params.id))
+  const productsQuery = useVendingMachineProducts(Number(params.id))
+  const ordersQuery = useVendingMachineOrders(Number(params.id), {
+    startDate,
+    endDate
+  })
+
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
 
-  const machine = getMachineById(params.id as string)
-  const status = statusConfig[machine.status as keyof typeof statusConfig]
-  const StatusIcon = status.icon
-  const fillPercentage = Math.round((machine.filled / machine.capacity) * 100)
+  if (
+    machineQuery.isLoading ||
+    productsQuery.isLoading ||
+    ordersQuery.isLoading ||
+    !machineQuery.data ||
+    !productsQuery.data?.data ||
+    !ordersQuery.data?.orders
+  ) {
+    return null
+  }
+
+  const machine = machineQuery.data
+  const products = productsQuery.data.data
+  const orders = ordersQuery.data.orders
+
+  const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
+  const revenue = orders.reduce(
+    (sum, order) => sum + (order.products?.price || 0),
+    0
+  )
 
   return (
     <>
       <main className="space-y-6">
         {/* Header */}
-        <div className="flex-1">
+        <div className="flex-1 flex items-center gap-4">
           <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">
             {machine.name}
           </h1>
 
-          <div className="flex items-center gap-3 mt-2">
-            <span className="text-muted-foreground">{machine.id}</span>
-
-            <Badge variant={status.variant} className="gap-1">
-              <StatusIcon className="h-3 w-3" />
-              {status.label}
-            </Badge>
-          </div>
+          <MachineStatus status={machine.status} />
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -130,20 +136,17 @@ export default function MachineDetailPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-muted-foreground" />
-                    <span>Модель: {machine.model}</span>
+                    <span>Серийный номер: {machine.serial_number}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      Установлен:{' '}
-                      {new Date(machine.installDate).toLocaleDateString(
-                        'ru-RU'
-                      )}
-                    </span>
+                    <span>Установлен: {machine.createdAtFormatted}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>Последняя синхронизация: {machine.lastSync}</span>
+                    <span>
+                      Последняя синхронизация: {machine.lastSeenFormatted}
+                    </span>
                   </div>
                 </CardContent>
 
@@ -179,8 +182,9 @@ export default function MachineDetailPage() {
                         style={{ width: `${fillPercentage}%` }}
                       />
                     </div>
+
                     <div className="text-xs text-muted-foreground">
-                      {machine.filled} из {machine.capacity} товаров
+                      {products.length} из {machine.num_slots} товаров
                     </div>
                   </div>
 
@@ -205,11 +209,9 @@ export default function MachineDetailPage() {
                         Сегодня
                       </span>
                     </div>
+
                     <div className="text-2xl font-bold">
-                      ₸{machine.revenue.toLocaleString()}
-                    </div>
-                    <div className="text-sm text-green-600">
-                      +12% к вчерашнему дню
+                      ₸{revenue.toLocaleString()}
                     </div>
                   </div>
                 </CardContent>
@@ -219,29 +221,24 @@ export default function MachineDetailPage() {
             {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Последняя активность</CardTitle>
+                <CardTitle className="text-lg">Активность за сегодня</CardTitle>
               </CardHeader>
+
               <CardContent>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span>Продажа: Кока-Кола 0.5л</span>
-                    <span className="text-muted-foreground">2 мин назад</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span>Продажа: Сникерс</span>
-                    <span className="text-muted-foreground">5 мин назад</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span>Пополнение товаров</span>
-                    <span className="text-muted-foreground">2 часа назад</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between items-center">
-                    <span>Техническое обслуживание</span>
-                    <span className="text-muted-foreground">1 день назад</span>
-                  </div>
+                  {ordersQuery.data.orders.map(order => (
+                    <Fragment key={order.id}>
+                      <div className="flex justify-between items-center">
+                        <span>Продажа: {order.products?.name}</span>
+
+                        <span className="text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </span>
+                      </div>
+
+                      <Separator />
+                    </Fragment>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -275,11 +272,11 @@ export default function MachineDetailPage() {
         </Tabs>
       </main>
 
-      <MachineRestockDialog
+      {/* <MachineRestockDialog
         machine={machine}
         open={restockDialogOpen}
         onOpenChange={setRestockDialogOpen}
-      />
+      /> */}
     </>
   )
 }
