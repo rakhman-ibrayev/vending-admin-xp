@@ -48,6 +48,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.4",
     "date-fns": "latest",
+    "dayjs": "^1.11.18",
     "embla-carousel-react": "8.5.1",
     "formik": "^2.4.6",
     "geist": "latest",
