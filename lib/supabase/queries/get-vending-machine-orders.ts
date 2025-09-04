@@ -42,12 +42,19 @@ export const getVendingMachineOrders = async (
       id,
       status,
       created_at,
-      products (
-        id,
-        name,
-        price,
-        sku,
-        image
+      machine_product_id,
+      machine_products (
+        slot_index,
+        current_stock,
+        max_capacity,
+        products (
+          id,
+          name,
+          price,
+          sku,
+          image,
+          category
+        )
       )
     `,
       { count: 'exact' }

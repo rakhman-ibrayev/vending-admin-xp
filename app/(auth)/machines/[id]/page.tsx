@@ -85,7 +85,7 @@ export default function MachineDetailPage() {
 
   const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
   const revenue = orders.reduce(
-    (sum, order) => sum + (order.products?.price || 0),
+    (sum, order) => sum + (order.machine_products?.products?.price || 0),
     0
   )
 
@@ -229,7 +229,9 @@ export default function MachineDetailPage() {
                   {ordersQuery.data.orders.map(order => (
                     <Fragment key={order.id}>
                       <div className="flex justify-between items-center">
-                        <span>Продажа: {order.products?.name}</span>
+                        <span>
+                          Продажа: {order.machine_products?.products?.name}
+                        </span>
 
                         <span className="text-muted-foreground">
                           {formatDate(order.created_at)}
