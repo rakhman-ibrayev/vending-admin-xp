@@ -3,7 +3,6 @@
 import { Fragment, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -19,8 +18,6 @@ import {
   Thermometer,
   Package,
   TrendingUp,
-  Wifi,
-  WifiOff,
   Wrench,
   Clock,
   Activity,
@@ -33,27 +30,6 @@ import { MachineStatus } from '@/components/machine-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
 import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
-
-const statusConfig = {
-  online: {
-    label: 'Работает',
-    color: 'bg-green-500',
-    variant: 'default' as const,
-    icon: Wifi
-  },
-  maintenance: {
-    label: 'Обслуживание',
-    color: 'bg-yellow-500',
-    variant: 'secondary' as const,
-    icon: Wrench
-  },
-  offline: {
-    label: 'Не в сети',
-    color: 'bg-red-500',
-    variant: 'destructive' as const,
-    icon: WifiOff
-  }
-}
 
 export default function MachineDetailPage() {
   const { startDate, endDate } = getTodayRange()
@@ -83,7 +59,8 @@ export default function MachineDetailPage() {
   const products = productsQuery.data.data
   const orders = ordersQuery.data.orders
 
-  const fillPercentage = (products.length / machine.num_slots) * 100
+  const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
+
   const revenue = orders.reduce(
     (sum, order) => sum + (order.machine_products?.products?.price || 0),
     0
@@ -275,11 +252,12 @@ export default function MachineDetailPage() {
         </Tabs>
       </main>
 
-      {/* <MachineRestockDialog
-        machine={machine}
+      <MachineRestockDialog
+        machineId={machine.id}
+        slotsCount={machine.num_slots}
         open={restockDialogOpen}
         onOpenChange={setRestockDialogOpen}
-      /> */}
+      />
     </>
   )
 }
