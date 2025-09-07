@@ -27,7 +27,11 @@ export const getVendingMachinesList = async () => {
         max_capacity
       ),
       orders (
-        products (price)
+        machine_products (
+            products (
+                price
+            )
+        )
       )
     `
     )
@@ -58,7 +62,7 @@ export const getVendingMachinesList = async () => {
         : 0
 
     const todayRevenue = orders.reduce(
-      (sum, order) => sum + (order.products?.price || 0),
+      (sum, order) => sum + (order.machine_products?.products?.price || 0),
       0
     )
 

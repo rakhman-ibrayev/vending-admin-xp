@@ -83,7 +83,7 @@ export default function MachineDetailPage() {
   const products = productsQuery.data.data
   const orders = ordersQuery.data.orders
 
-  const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
+  const fillPercentage = (products.length / machine.num_slots) * 100
   const revenue = orders.reduce(
     (sum, order) => sum + (order.machine_products?.products?.price || 0),
     0
@@ -170,7 +170,8 @@ export default function MachineDetailPage() {
                       <span>Заполненность</span>
                       <span className="font-semibold">{fillPercentage}%</span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-3">
+
+                    <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
                         className={`h-3 rounded-full transition-all ${
                           fillPercentage > 80
