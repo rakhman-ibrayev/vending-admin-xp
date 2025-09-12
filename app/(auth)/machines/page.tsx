@@ -69,6 +69,10 @@ export default function MachinesPage() {
       return matchesSearch && matchesStatus
     }) || []
 
+  if (vendingMachinesQuery.isLoading) {
+    return null
+  }
+
   return (
     <>
       <main className="space-y-6">
