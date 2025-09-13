@@ -24,25 +24,29 @@ import {
   BarChart3,
   Edit
 } from 'lucide-react'
-import { MachineRestockDialog } from '@/components/machine-restock-dialog'
+import { MachineRestockDialog } from '@/features/machine-restock'
 import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
 import { MachineStatus } from '@/components/machine-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
 import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
+import { useRestockVendingMachine } from '@/entities/vending-machines/use-restock-vending-machine'
 
 export default function MachineDetailPage() {
   const { startDate, endDate } = getTodayRange()
 
   const params = useParams()
-  const machineQuery = useVendingMachine(Number(params.id))
-  const productsQuery = useVendingMachineProducts(Number(params.id))
-  const ordersQuery = useVendingMachineOrders(Number(params.id), {
+  const machineId = Number(params.id)
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
+
+  const machineQuery = useVendingMachine(machineId)
+  const productsQuery = useVendingMachineProducts(machineId)
+  const ordersQuery = useVendingMachineOrders(machineId, {
     startDate,
     endDate
   })
 
-  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
+  const restockMutation = useRestockVendingMachine()
 
   if (
     machineQuery.isLoading ||
@@ -257,6 +261,20 @@ export default function MachineDetailPage() {
         slotsCount={machine.num_slots}
         open={restockDialogOpen}
         onOpenChange={setRestockDialogOpen}
+        onSubmit={async values => {
+          const activeSlots = values.slots.filter(slot => slot.maxCapacity)
+
+          const slots = activeSlots.map(slot => ({
+            slotIndex: slot.slotNumber,
+            productId: slot.product?.id ?? null,
+            currentStock: slot.restockQty,
+            maxCapacity: slot.maxCapacity
+          }))
+
+          await restockMutation.mutateAsync({ machineId, slots })
+
+          setRestockDialogOpen(false)
+        }}
       />
     </>
   )

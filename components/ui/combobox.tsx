@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
+import { ChevronsUpDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -63,14 +63,19 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('w-[200px] justify-between', className)}
+          className={cn('gap-1 justify-between', className)}
           disabled={disabled}
         >
-          {selectedOption ? selectedOption.label : placeholder}
+          <div className="overflow-hidden">
+            {selectedOption ? selectedOption.label : placeholder}
+          </div>
+
           <ChevronsUpDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className={cn('w-[200px] p-0', className)}>
+      <PopoverContent
+        className={cn('p-0 w-[var(--radix-popper-anchor-width)]', className)}
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
 

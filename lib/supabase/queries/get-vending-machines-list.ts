@@ -45,21 +45,14 @@ export const getVendingMachinesList = async () => {
     return []
   }
 
-  return (data ?? []).map(machine => {
+  return data?.map(machine => {
     const machineProducts = machine.machine_products ?? []
     const orders = machine.orders ?? []
+    const totalCurrentStock = machineProducts.length
 
-    const totalCurrentStock = machineProducts.reduce(
-      (sum, product) => sum + (product.current_stock || 0),
-      0
+    const fillPercentage = Math.round(
+      (totalCurrentStock / machine.num_slots) * 100
     )
-
-    const totalMaxCapacity = machine.num_slots || 0
-
-    const fillPercentage =
-      totalMaxCapacity > 0
-        ? Math.round((totalCurrentStock / totalMaxCapacity) * 100)
-        : 0
 
     const todayRevenue = orders.reduce(
       (sum, order) => sum + (order.machine_products?.products?.price || 0),

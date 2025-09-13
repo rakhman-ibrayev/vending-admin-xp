@@ -3,6 +3,7 @@ import { Combobox } from '@/components/ui/combobox'
 import { useProductsList } from '@/entities/products/use-products-list'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
+import { useMemo } from 'react'
 
 interface Product {
   id: number
@@ -13,7 +14,7 @@ interface Product {
 interface ProductSelectorProps {
   value: Product
   onValueChange: (value: Product) => void
-  onCancelClick: () => void
+  onCancelClick?: () => void
   className?: string
 }
 
@@ -25,34 +26,39 @@ function ProductSelector({
 }: ProductSelectorProps) {
   const productsQuery = useProductsList()
 
-  const options =
-    productsQuery.data?.products.map(product => ({
-      value: JSON.stringify({
-        id: product.id,
-        name: product.name,
-        sku: product.sku
-      }),
-      label: (
-        <span>
-          {product.name}{' '}
-          <span className="text-muted-foreground">- ₸{product.price}</span>
-        </span>
-      )
-    })) || []
+  const options = useMemo(
+    () =>
+      productsQuery.data?.products.map(product => ({
+        value: JSON.stringify({
+          id: product.id,
+          name: product.name,
+          sku: product.sku
+        }),
+        label: (
+          <span>
+            {product.name}{' '}
+            <span className="text-muted-foreground">- ₸{product.price}</span>
+          </span>
+        )
+      })) || [],
+    []
+  )
 
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center w-full max-w-56', className)}>
       <Combobox
         options={options}
         value={JSON.stringify(value)}
         onChange={newValue => onValueChange(JSON.parse(newValue))}
         placeholder="Выберите товар"
-        className="w-48"
+        className="flex-1"
       />
 
-      <Button variant="ghost" size="sm" onClick={onCancelClick}>
-        <X />
-      </Button>
+      {onCancelClick && (
+        <Button variant="ghost" size="sm" onClick={onCancelClick}>
+          <X />
+        </Button>
+      )}
     </div>
   )
 }
