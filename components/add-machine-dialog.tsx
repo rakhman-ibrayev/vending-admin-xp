@@ -45,7 +45,7 @@ const initialValues: FormData = {
   parity: 0,
   data_bits: 8,
   stop_bits: 1,
-  target_temperature: 4,
+  target_temperature: 15,
   num_slots: 120,
   technician_password: ''
 }
@@ -233,7 +233,9 @@ export function AddMachineDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target_temperature">Температура (°C) *</Label>
+              <Label htmlFor="target_temperature">
+                Целевая температура (°C) *
+              </Label>
               <Input
                 id="target_temperature"
                 name="target_temperature"
