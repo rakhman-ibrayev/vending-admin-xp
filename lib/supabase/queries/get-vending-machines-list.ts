@@ -27,6 +27,7 @@ export const getVendingMachinesList = async () => {
         max_capacity
       ),
       orders (
+        status,
         machine_products (
             products (
                 price
@@ -54,10 +55,11 @@ export const getVendingMachinesList = async () => {
       (totalCurrentStock / machine.num_slots) * 100
     )
 
-    const todayRevenue = orders.reduce(
-      (sum, order) => sum + (order.machine_products?.products?.price || 0),
-      0
-    )
+    const todayRevenue = orders.reduce((sum, order) => {
+      if (order.status !== 'paid') return sum + 0
+
+      return sum + (order.machine_products?.products?.price || 0)
+    }, 0)
 
     return {
       id: machine.id,
