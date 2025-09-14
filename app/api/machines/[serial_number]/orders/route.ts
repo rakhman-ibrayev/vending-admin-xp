@@ -125,15 +125,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        success: true,
-        order: {
-          id: order.id,
-          status: order.status,
-          created_at: order.created_at,
-          slot_index: machineProduct.slot_index,
-          product: machineProduct.products,
-          current_stock: machineProduct.current_stock
-        }
+        id: order.id
       },
       { status: 201 }
     )
