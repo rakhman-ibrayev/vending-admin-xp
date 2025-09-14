@@ -24,6 +24,7 @@ export async function GET(
         id,
         status,
         created_at,
+        machine_command,
         machine_products (
           slot_index,
           products (
@@ -48,7 +49,8 @@ export async function GET(
       created_at: order.created_at,
       slot_index: order.machine_products?.slot_index,
       product_name: order.machine_products?.products?.name,
-      product_price: order.machine_products?.products?.price
+      product_price: order.machine_products?.products?.price,
+      machine_command: order.machine_command
     }
 
     return NextResponse.json(response)
