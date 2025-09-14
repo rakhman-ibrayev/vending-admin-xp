@@ -183,10 +183,12 @@ export default function MachineDetailPage() {
                 <CardHeader>
                   <CardTitle className="text-lg">Доходы за сегодня</CardTitle>
                 </CardHeader>
+
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
+
                       <span className="text-sm text-muted-foreground">
                         Сегодня
                       </span>
@@ -256,26 +258,27 @@ export default function MachineDetailPage() {
         </Tabs>
       </main>
 
-      <MachineRestockDialog
-        machineId={machine.id}
-        slotsCount={machine.num_slots}
-        open={restockDialogOpen}
-        onOpenChange={setRestockDialogOpen}
-        onSubmit={async values => {
-          const activeSlots = values.slots.filter(slot => slot.maxCapacity)
+      {restockDialogOpen && (
+        <MachineRestockDialog
+          machineId={machine.id}
+          slotsCount={machine.num_slots}
+          onOpenChange={setRestockDialogOpen}
+          onSubmit={async values => {
+            const activeSlots = values.slots.filter(slot => slot.maxCapacity)
 
-          const slots = activeSlots.map(slot => ({
-            slotIndex: slot.slotNumber,
-            productId: slot.product?.id ?? null,
-            currentStock: slot.restockQty,
-            maxCapacity: slot.maxCapacity
-          }))
+            const slots = activeSlots.map(slot => ({
+              slotIndex: slot.slotNumber,
+              productId: slot.product?.id ?? null,
+              currentStock: slot.restockQty,
+              maxCapacity: slot.maxCapacity
+            }))
 
-          await restockMutation.mutateAsync({ machineId, slots })
+            await restockMutation.mutateAsync({ machineId, slots })
 
-          setRestockDialogOpen(false)
-        }}
-      />
+            setRestockDialogOpen(false)
+          }}
+        />
+      )}
     </>
   )
 }

@@ -16,7 +16,6 @@ import { MachineCard } from './machine-card'
 interface MachineRestockDialogProps {
   machineId: number
   slotsCount: number
-  open: boolean
   onOpenChange: (open: boolean) => void
   onSubmit: (values: FormData) => void
 }
@@ -41,7 +40,6 @@ interface FormData {
 export function MachineRestockDialog({
   machineId,
   slotsCount,
-  open,
   onOpenChange,
   onSubmit
 }: MachineRestockDialogProps) {
@@ -104,8 +102,8 @@ export function MachineRestockDialog({
 
   if (productsQuery.isLoading || machineProductsQuery.isLoading) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent showCloseButton={false}>
           <span className="text-muted-foreground">Загрузка слотов...</span>
         </DialogContent>
       </Dialog>
@@ -113,7 +111,7 @@ export function MachineRestockDialog({
   }
 
   return (
-    <Dialog open={open}>
+    <Dialog open>
       <DialogContent
         className="!w-[97.5%] !max-w-[800px] max-h-[85vh] overflow-y-auto p-3 lg:p-5"
         showCloseButton={false}
