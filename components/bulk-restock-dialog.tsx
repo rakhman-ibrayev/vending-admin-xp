@@ -21,13 +21,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { AlertTriangle, TrendingUp } from 'lucide-react'
 
 interface Product {
-  id: string
+  id: number
   name: string
   category: string
   totalStock: number
   lowStockThreshold: number
   cost: number
-  supplier: string
   salesThisMonth: number
 }
 
@@ -42,7 +41,7 @@ export function BulkRestockDialog({
   open,
   onOpenChange
 }: BulkRestockDialogProps) {
-  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+  const [selectedProducts, setSelectedProducts] = useState<Set<number>>(
     new Set()
   )
   const [quantities, setQuantities] = useState<Record<string, string>>({})
@@ -60,7 +59,7 @@ export function BulkRestockDialog({
     return Math.max(0, stockNeeded - product.totalStock)
   }
 
-  const handleProductToggle = (productId: string, checked: boolean) => {
+  const handleProductToggle = (productId: number, checked: boolean) => {
     const newSelected = new Set(selectedProducts)
     if (checked) {
       newSelected.add(productId)
@@ -83,7 +82,7 @@ export function BulkRestockDialog({
     setSelectedProducts(newSelected)
   }
 
-  const handleQuantityChange = (productId: string, value: string) => {
+  const handleQuantityChange = (productId: number, value: string) => {
     setQuantities(prev => ({
       ...prev,
       [productId]: value

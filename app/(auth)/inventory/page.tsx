@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -35,79 +34,32 @@ import { AddProductDialog } from '@/components/add-product-dialog'
 import { StockUpdateDialog } from '@/components/stock-update-dialog'
 import { BulkRestockDialog } from '@/components/bulk-restock-dialog'
 import { QuickRestockActions } from '@/components/quick-restock-actions'
-
-// Mock data for inventory
-const products = [
-  {
-    id: 'P-001',
-    name: 'Кока-Кола 0.5л',
-    category: 'Напитки',
-    price: 89,
-    totalStock: 245,
-    lowStockThreshold: 50,
-    cost: 45,
-    supplier: 'Coca-Cola HBC',
-    barcode: '4607065390013',
-    lastRestocked: '2024-01-15',
-    salesThisMonth: 156
-  },
-  {
-    id: 'P-002',
-    name: 'Сникерс',
-    category: 'Шоколад',
-    price: 65,
-    totalStock: 23,
-    lowStockThreshold: 30,
-    cost: 35,
-    supplier: 'Mars',
-    barcode: '4011100062504',
-    lastRestocked: '2024-01-10',
-    salesThisMonth: 89
-  },
-  {
-    id: 'P-003',
-    name: 'Вода Бон Аква 0.5л',
-    category: 'Напитки',
-    price: 45,
-    totalStock: 189,
-    lowStockThreshold: 40,
-    cost: 22,
-    supplier: 'Coca-Cola HBC',
-    barcode: '4607065390020',
-    lastRestocked: '2024-01-12',
-    salesThisMonth: 234
-  },
-  {
-    id: 'P-004',
-    name: 'Чипсы Лейс Классические',
-    category: 'Снеки',
-    price: 75,
-    totalStock: 67,
-    lowStockThreshold: 25,
-    cost: 42,
-    supplier: 'PepsiCo',
-    barcode: '4607065390037',
-    lastRestocked: '2024-01-14',
-    salesThisMonth: 78
-  },
-  {
-    id: 'P-005',
-    name: 'Кофе Нескафе 3в1',
-    category: 'Горячие напитки',
-    price: 35,
-    totalStock: 12,
-    lowStockThreshold: 20,
-    cost: 18,
-    supplier: 'Nestle',
-    barcode: '4607065390044',
-    lastRestocked: '2024-01-08',
-    salesThisMonth: 45
-  }
-]
-
-const categories = ['Все', 'Напитки', 'Шоколад', 'Снеки', 'Горячие напитки']
+import { useProductsList } from '@/entities/products/use-products-list'
+import { ProductStatusBadge } from '@/components/product-status-badge'
 
 export default function InventoryPage() {
+  const productsQuery = useProductsList()
+
+  const products =
+    productsQuery.data?.products.map(product => ({
+      id: product.id,
+      name: product.name || '',
+      category: product.category || '',
+      price: product.price,
+      totalStock: 12,
+      lowStockThreshold: 20,
+      cost: 18,
+      barcode: product.sku,
+      salesThisMonth: 45
+    })) || []
+
+  const categories = Array.from(
+    products.reduce((acc, curr) => {
+      acc.add(curr.category)
+      return acc
+    }, new Set<string>())
+  )
+
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('Все')
   const [stockFilter, setStockFilter] = useState('all')
@@ -122,21 +74,26 @@ export default function InventoryPage() {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchTerm.toLowerCase())
+      product.id.toString().includes(searchTerm.toLowerCase())
+
     const matchesCategory =
       categoryFilter === 'Все' || product.category === categoryFilter
+
     const matchesStock =
       stockFilter === 'all' ||
       (stockFilter === 'low' &&
         product.totalStock <= product.lowStockThreshold) ||
       (stockFilter === 'out' && product.totalStock === 0)
+
     return matchesSearch && matchesCategory && matchesStock
   })
 
   const lowStockCount = products.filter(
     p => p.totalStock <= p.lowStockThreshold && p.totalStock > 0
   ).length
+
   const outOfStockCount = products.filter(p => p.totalStock === 0).length
+
   const totalValue = products.reduce((sum, p) => sum + p.totalStock * p.cost, 0)
 
   const handleUpdateStock = (product: (typeof products)[0]) => {
@@ -144,13 +101,12 @@ export default function InventoryPage() {
     setIsStockDialogOpen(true)
   }
 
-  const handleQuickRestock = (productId: string, quantity: number) => {
+  const handleQuickRestock = (productId: number, quantity: number) => {
     console.log('Quick restock:', {
       productId,
       quantity,
       reason: 'Быстрое пополнение'
     })
-    // Здесь будет логика обновления запасов
   }
 
   return (
@@ -164,10 +120,12 @@ export default function InventoryPage() {
                 <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
                   Управление товарами
                 </h1>
+
                 <p className="text-muted-foreground mt-2">
                   Контроль запасов и управление ассортиментом
                 </p>
               </div>
+
               <div className="flex gap-2">
                 <Button
                   onClick={() => setIsBulkRestockOpen(true)}
@@ -177,6 +135,7 @@ export default function InventoryPage() {
                   <Package className="h-4 w-4" />
                   Массовое пополнение
                 </Button>
+
                 <Button
                   onClick={() => setIsAddDialogOpen(true)}
                   className="gap-2"
@@ -195,10 +154,13 @@ export default function InventoryPage() {
                 <CardTitle className="text-sm font-medium">
                   Всего товаров
                 </CardTitle>
+
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
+
               <CardContent>
                 <div className="text-2xl font-bold">{products.length}</div>
+
                 <p className="text-xs text-muted-foreground">
                   активных позиций
                 </p>
@@ -210,12 +172,15 @@ export default function InventoryPage() {
                 <CardTitle className="text-sm font-medium">
                   Низкие запасы
                 </CardTitle>
+
                 <AlertTriangle className="h-4 w-4 text-yellow-500" />
               </CardHeader>
+
               <CardContent>
                 <div className="text-2xl font-bold text-yellow-600">
                   {lowStockCount}
                 </div>
+
                 <p className="text-xs text-muted-foreground">
                   требуют пополнения
                 </p>
@@ -227,12 +192,15 @@ export default function InventoryPage() {
                 <CardTitle className="text-sm font-medium">
                   Нет в наличии
                 </CardTitle>
+
                 <TrendingDown className="h-4 w-4 text-red-500" />
               </CardHeader>
+
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">
                   {outOfStockCount}
                 </div>
+
                 <p className="text-xs text-muted-foreground">
                   товаров закончилось
                 </p>
@@ -244,12 +212,15 @@ export default function InventoryPage() {
                 <CardTitle className="text-sm font-medium">
                   Стоимость запасов
                 </CardTitle>
+
                 <TrendingUp className="h-4 w-4 text-green-500" />
               </CardHeader>
+
               <CardContent>
                 <div className="text-2xl font-bold">
                   ₸{totalValue.toLocaleString()}
                 </div>
+
                 <p className="text-xs text-muted-foreground">общая стоимость</p>
               </CardContent>
             </Card>
@@ -263,10 +234,11 @@ export default function InventoryPage() {
 
           {/* Filters */}
           <Card>
-            <CardContent className="p-6">
+            <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
                   <Input
                     placeholder="Поиск товаров..."
                     value={searchTerm}
@@ -282,6 +254,7 @@ export default function InventoryPage() {
                       Категория: {categoryFilter}
                     </Button>
                   </DropdownMenuTrigger>
+
                   <DropdownMenuContent>
                     {categories.map(category => (
                       <DropdownMenuItem
@@ -306,13 +279,16 @@ export default function InventoryPage() {
                           : 'Закончились'}
                     </Button>
                   </DropdownMenuTrigger>
+
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => setStockFilter('all')}>
                       Все товары
                     </DropdownMenuItem>
+
                     <DropdownMenuItem onClick={() => setStockFilter('low')}>
                       Низкие запасы
                     </DropdownMenuItem>
+
                     <DropdownMenuItem onClick={() => setStockFilter('out')}>
                       Нет в наличии
                     </DropdownMenuItem>
@@ -327,19 +303,25 @@ export default function InventoryPage() {
             <CardHeader>
               <CardTitle>Товары ({filteredProducts.length})</CardTitle>
             </CardHeader>
+
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Товар</TableHead>
-                    <TableHead>Категория</TableHead>
+
                     <TableHead>Цена</TableHead>
+
                     <TableHead>Запас</TableHead>
+
                     <TableHead>Статус</TableHead>
+
                     <TableHead>Продажи за месяц</TableHead>
+
                     <TableHead className="text-right">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
+
                 <TableBody>
                   {filteredProducts.map(product => {
                     const isLowStock =
@@ -350,65 +332,39 @@ export default function InventoryPage() {
                     return (
                       <TableRow key={product.id}>
                         <TableCell>
-                          <div>
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {product.id}
-                            </div>
-                          </div>
+                          <div className="font-medium">{product.name}</div>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{product.category}</Badge>
-                        </TableCell>
+
                         <TableCell>₸{product.price}</TableCell>
+
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`font-medium ${
-                                isOutOfStock
-                                  ? 'text-red-600'
-                                  : isLowStock
-                                    ? 'text-yellow-600'
-                                    : 'text-foreground'
-                              }`}
-                            >
-                              {product.totalStock}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleUpdateStock(product)}
-                              className="h-6 px-2 text-xs"
-                            >
-                              Пополнить
-                            </Button>
-                          </div>
+                          <span
+                            className={`font-medium ${
+                              isOutOfStock
+                                ? 'text-red-600'
+                                : isLowStock
+                                  ? 'text-yellow-600'
+                                  : 'text-foreground'
+                            }`}
+                          >
+                            {product.totalStock}
+                          </span>
                         </TableCell>
+
                         <TableCell>
-                          {isOutOfStock ? (
-                            <Badge variant="destructive">Нет в наличии</Badge>
-                          ) : isLowStock ? (
-                            <Badge
-                              variant="secondary"
-                              className="bg-yellow-100 text-yellow-800"
-                            >
-                              Низкий запас
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="default"
-                              className="bg-green-100 text-green-800"
-                            >
-                              В наличии
-                            </Badge>
-                          )}
+                          <ProductStatusBadge
+                            isLowStock={isLowStock}
+                            isOutOfStock={isOutOfStock}
+                          />
                         </TableCell>
+
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <TrendingUp className="h-3 w-3 text-green-500" />
                             {product.salesThisMonth}
                           </div>
                         </TableCell>
+
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -416,17 +372,20 @@ export default function InventoryPage() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
+
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem>
                                 <Edit className="h-4 w-4 mr-2" />
                                 Редактировать
                               </DropdownMenuItem>
+
                               <DropdownMenuItem
                                 onClick={() => handleUpdateStock(product)}
                               >
                                 <Package className="h-4 w-4 mr-2" />
                                 Управление запасами
                               </DropdownMenuItem>
+
                               <DropdownMenuItem className="text-destructive">
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Удалить
@@ -443,9 +402,11 @@ export default function InventoryPage() {
               {filteredProducts.length === 0 && (
                 <div className="text-center py-12">
                   <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+
                   <h3 className="text-lg font-semibold mb-2">
                     Товары не найдены
                   </h3>
+
                   <p className="text-muted-foreground">
                     Попробуйте изменить параметры поиска или добавить новый
                     товар

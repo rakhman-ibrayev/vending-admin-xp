@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Package, Zap, AlertTriangle, TrendingUp } from 'lucide-react'
 
 interface Product {
-  id: string
+  id: number
   name: string
   category: string
   totalStock: number
@@ -16,7 +16,7 @@ interface Product {
 
 interface QuickRestockActionsProps {
   products: Product[]
-  onQuickRestock: (productId: string, quantity: number) => void
+  onQuickRestock: (productId: number, quantity: number) => void
 }
 
 export function QuickRestockActions({

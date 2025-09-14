@@ -20,13 +20,12 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Minus, Package } from 'lucide-react'
 
 interface Product {
-  id: string
+  id: number
   name: string
   category: string
   totalStock: number
   lowStockThreshold: number
   cost: number
-  supplier: string
 }
 
 interface StockUpdateDialogProps {
