@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Package, Zap, AlertTriangle, TrendingUp } from 'lucide-react'
 
 interface Product {
@@ -60,12 +59,10 @@ export function QuickRestockActions({
                 >
                   <div className="flex-1">
                     <div className="font-medium text-sm">{product.name}</div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Badge variant="outline" className="text-xs">
-                        {product.category}
-                      </Badge>
-                      <span>Осталось: {product.totalStock}</span>
-                    </div>
+
+                    <span className="text-xs text-muted-foreground">
+                      Осталось: {product.totalStock}
+                    </span>
                   </div>
                   <Button
                     size="sm"
@@ -94,6 +91,7 @@ export function QuickRestockActions({
             Популярные товары
           </CardTitle>
         </CardHeader>
+
         <CardContent className="space-y-3">
           {topSellingProducts.map(product => {
             const quickAmount = Math.ceil(product.salesThisMonth / 4) // Недельные продажи
@@ -104,12 +102,10 @@ export function QuickRestockActions({
               >
                 <div className="flex-1">
                   <div className="font-medium text-sm">{product.name}</div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="text-xs">
-                      {product.category}
-                    </Badge>
-                    <span>{product.salesThisMonth} продаж/мес</span>
-                  </div>
+
+                  <span className="text-xs text-muted-foreground">
+                    {product.salesThisMonth} продаж/мес
+                  </span>
                 </div>
                 <Button
                   size="sm"

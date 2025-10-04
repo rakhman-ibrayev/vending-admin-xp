@@ -126,7 +126,7 @@ export default function InventoryPage() {
                 </p>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button
                   onClick={() => setIsBulkRestockOpen(true)}
                   variant="outline"
@@ -299,7 +299,7 @@ export default function InventoryPage() {
           </Card>
 
           {/* Products Table */}
-          <Card>
+          <Card className="w-[calc(100vw-50px)] md:w-auto">
             <CardHeader>
               <CardTitle>Товары ({filteredProducts.length})</CardTitle>
             </CardHeader>

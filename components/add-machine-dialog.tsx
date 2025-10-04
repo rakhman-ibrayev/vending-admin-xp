@@ -262,6 +262,7 @@ export function AddMachineDialog({
                   value={formik.values.baud_rate}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  disabled
                 />
                 <ErrorMessage
                   name="baud_rate"
@@ -279,6 +280,7 @@ export function AddMachineDialog({
                   value={formik.values.parity}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  disabled
                 />
                 <ErrorMessage
                   name="parity"
@@ -296,6 +298,7 @@ export function AddMachineDialog({
                   value={formik.values.data_bits}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  disabled
                 />
                 <ErrorMessage
                   name="data_bits"
@@ -313,6 +316,7 @@ export function AddMachineDialog({
                   value={formik.values.stop_bits}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
+                  disabled
                 />
                 <ErrorMessage
                   name="stop_bits"
@@ -330,6 +334,7 @@ export function AddMachineDialog({
                 value={formik.values.device_path}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
+                disabled
               />
               <ErrorMessage
                 name="device_path"

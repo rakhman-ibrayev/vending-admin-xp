@@ -150,7 +150,7 @@ export default function MachinesPage() {
                       <CardTitle className="text-lg font-[family-name:var(--font-work-sans)]">
                         {machine.name}
                       </CardTitle>
-                      <div className="flex items-center gap-2">
+                      <div className="flex gap-2 flex-col">
                         <MachineStatus status={machine.status} />
 
                         <span className="text-sm text-muted-foreground">
