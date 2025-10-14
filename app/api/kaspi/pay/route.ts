@@ -16,7 +16,12 @@ function buildResponse(
   prv_txn?: string,
   sum?: string
 ) {
-  const response: any = { txn_id, result, comment }
+  const response: any = {
+    txn_id,
+    result,
+    comment,
+    bin: process.env.NEXT_PUBLIC_PHARMEXPRESS_COMPANY_BIN
+  }
 
   if (prv_txn !== undefined) response.prv_txn = prv_txn
   if (sum !== undefined) response.sum = sum
