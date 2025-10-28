@@ -16,30 +16,42 @@ export async function GET(
       )
     }
 
+    // First, get the machine to verify it exists and get its ID
+    const { data: machine, error: machineError } = await supabase
+      .from('vending_machines')
+      .select('id, serial_number, name, location, status')
+      .eq('serial_number', serial_number)
+      .single()
+
+    if (machineError || !machine) {
+      return NextResponse.json({ error: 'Machine not found' }, { status: 404 })
+    }
+
+    // Then get products for that specific machine
     const { data: products, error } = await supabase
       .from('machine_products')
       .select(
         `
-      id,
-      slot_index,
-      current_stock,
-      max_capacity,
-      last_restocked,
-      created_at,
-      products (
         id,
-        name,
-        price,
-        sku,
-        image,
-        category
-      ),
-      vending_machines (
-        serial_number
+        slot_index,
+        current_stock,
+        max_capacity,
+        last_restocked,
+        created_at,
+        products (
+          id,
+          name,
+          price,
+          sku,
+          image,
+          category
+        ),
+        vending_machines (
+          serial_number
+        )
+      `
       )
-    `
-      )
-      .eq('vending_machines.serial_number', serial_number)
+      .eq('machine_id', machine.id)
       .order('slot_index')
 
     if (error) {
@@ -51,9 +63,8 @@ export async function GET(
     await supabase
       .from('vending_machines')
       .update({ last_seen: new Date().toISOString() })
-      .eq('serial_number', serial_number)
+      .eq('id', machine.id)
 
-    // Return all machine data - let the vending machine use what it needs
     return NextResponse.json(products)
   } catch (error) {
     console.error('Unexpected error fetching machine:', error)
