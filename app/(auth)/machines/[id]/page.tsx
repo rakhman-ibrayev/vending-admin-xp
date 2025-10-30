@@ -21,8 +21,7 @@ import {
   Wrench,
   Clock,
   Activity,
-  BarChart3,
-  Edit
+  BarChart3
 } from 'lucide-react'
 import { MachineRestockDialog } from '@/features/machine-restock'
 import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
@@ -31,6 +30,7 @@ import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
 import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
 import { useRestockVendingMachine } from '@/entities/vending-machines/use-restock-vending-machine'
+import { EditMachine } from '@/features/edit-machine'
 
 export default function MachineDetailPage() {
   const { startDate, endDate } = getTodayRange()
@@ -105,9 +105,7 @@ export default function MachineDetailPage() {
                 <CardHeader className="flex items-center justify-between">
                   <CardTitle className="text-lg">Основная информация</CardTitle>
 
-                  <Button variant="ghost">
-                    <Edit />
-                  </Button>
+                  <EditMachine machineId={machineId} />
                 </CardHeader>
 
                 <CardContent className="space-y-4">

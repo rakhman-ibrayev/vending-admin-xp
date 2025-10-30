@@ -4,25 +4,25 @@ import { getVendingMachineProducts } from '@/lib/supabase/queries/get-vending-ma
 import { getVendingMachinesList } from '@/lib/supabase/queries/get-vending-machines-list'
 
 export const vendingMachinesQueries = {
-  all: () => ['machines'],
+  all: () => ['machines'] as const,
 
   list: () => ({
-    queryKey: [...vendingMachinesQueries.all(), 'list'],
+    queryKey: [...vendingMachinesQueries.all(), 'list'] as const,
     queryFn: getVendingMachinesList
   }),
 
   machine: (id: number) => ({
-    queryKey: [...vendingMachinesQueries.all(), id],
+    queryKey: [...vendingMachinesQueries.all(), id] as const,
     queryFn: () => getVendingMachine(id)
   }),
 
   machineProducts: (id: number) => ({
-    queryKey: [...vendingMachinesQueries.all(), id, 'products'],
+    queryKey: [...vendingMachinesQueries.all(), id, 'products'] as const,
     queryFn: () => getVendingMachineProducts(id)
   }),
 
   machineOrders: (...args: Parameters<typeof getVendingMachineOrders>) => ({
-    queryKey: [...vendingMachinesQueries.all(), ...args, 'orders'],
+    queryKey: [...vendingMachinesQueries.all(), ...args, 'orders'] as const,
     queryFn: () => getVendingMachineOrders(...args)
   })
-}
+} as const

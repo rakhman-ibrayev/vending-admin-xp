@@ -72,13 +72,15 @@ interface AddMachineDialogProps {
   onClose: () => void
   defaultValues?: Partial<FormData>
   onSubmit: FormikConfig<FormData>['onSubmit']
+  isEditing?: boolean
 }
 
 export function AddMachineDialog({
   open,
   onClose,
   defaultValues,
-  onSubmit
+  onSubmit,
+  isEditing = false
 }: AddMachineDialogProps) {
   const formik = useFormik<FormData>({
     initialValues: { ...initialValues, ...defaultValues },
@@ -91,7 +93,7 @@ export function AddMachineDialog({
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-[family-name:var(--font-work-sans)]">
-            Добавить новый аппарат
+            {isEditing ? 'Редактировать аппарат' : 'Добавить новый аппарат'}
           </DialogTitle>
         </DialogHeader>
 
@@ -106,6 +108,7 @@ export function AddMachineDialog({
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 placeholder="SN123456"
+                disabled={isEditing}
               />
               <ErrorMessage
                 name="serial_number"
@@ -349,7 +352,11 @@ export function AddMachineDialog({
               </Button>
 
               <Button type="submit" disabled={formik.isSubmitting}>
-                {formik.isSubmitting ? 'Сохраняем...' : 'Добавить'}
+                {formik.isSubmitting
+                  ? 'Сохраняем...'
+                  : isEditing
+                    ? 'Сохранить'
+                    : 'Добавить'}
               </Button>
             </DialogFooter>
           </form>
