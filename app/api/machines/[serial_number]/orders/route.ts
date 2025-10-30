@@ -80,52 +80,49 @@ export async function POST(
       )
     }
 
-    // Check if product is in stock
-    if (machineProduct.current_stock <= 0) {
+    // Create order and update stock atomically using a database function
+    const { data: result, error: transactionError } = await supabase.rpc(
+      'create_order_with_stock_update',
+      {
+        p_machine_id: machine.id,
+        p_machine_product_id: machineProduct.id,
+        p_machine_command: vendProduct(slot_index - 1), // Convert to 0-based index
+        p_slot_index: slot_index
+      }
+    )
+
+    if (transactionError) {
+      console.error('Error in transaction:', transactionError)
       return NextResponse.json(
-        { error: 'Product out of stock' },
-        { status: 400 }
+        { error: 'Failed to process order' },
+        { status: 500 }
       )
     }
 
-    // 3) Create a new order
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        machine_id: machine.id,
-        machine_product_id: machineProduct.id,
-        machine_command: vendProduct(slot_index - 1), // Convert to 0-based index
-        status: 'created'
-      })
-      .select(
-        `
-        id,
-        status,
-        created_at,
-        machine_products (
-          slot_index,
-          products (
-            id,
-            name,
-            price,
-            sku
-          )
-        )
-      `
-      )
-      .single()
-
-    if (orderError) {
-      console.error('Error creating order:', orderError)
+    if (!result) {
       return NextResponse.json(
-        { error: 'Failed to create order' },
+        { error: 'No response from database' },
+        { status: 500 }
+      )
+    }
+
+    const response = result as { error?: string; order_id?: number }
+
+    if (response.error) {
+      console.error('Transaction failed:', response.error)
+      return NextResponse.json({ error: response.error }, { status: 400 })
+    }
+
+    if (!response.order_id) {
+      return NextResponse.json(
+        { error: 'No order ID returned' },
         { status: 500 }
       )
     }
 
     return NextResponse.json(
       {
-        id: order.id
+        id: response.order_id
       },
       { status: 201 }
     )

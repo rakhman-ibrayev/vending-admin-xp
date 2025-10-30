@@ -60,10 +60,16 @@ export async function GET(
     }
 
     // Update last_seen timestamp
-    await supabase
+    const { error: updateError } = await supabase
       .from('vending_machines')
       .update({ last_seen: new Date().toISOString() })
       .eq('id', machine.id)
+
+    if (updateError) {
+      console.error('Error updating last_seen timestamp:', updateError)
+      // Don't return error to client as the main operation succeeded
+      // But log it for monitoring
+    }
 
     return NextResponse.json(products)
   } catch (error) {

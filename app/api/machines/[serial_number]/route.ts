@@ -29,10 +29,16 @@ export async function GET(
     }
 
     // Update last_seen timestamp
-    await supabase
+    const { error: updateError } = await supabase
       .from('vending_machines')
       .update({ last_seen: new Date().toISOString() })
       .eq('serial_number', serial_number)
+
+    if (updateError) {
+      console.error('Error updating last_seen timestamp:', updateError)
+      // Don't return error to client as the main operation succeeded
+      // But log it for monitoring
+    }
 
     // Return all machine data - let the vending machine use what it needs
     return NextResponse.json(machine)
