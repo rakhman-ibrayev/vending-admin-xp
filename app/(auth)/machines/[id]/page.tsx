@@ -1,8 +1,7 @@
 'use client'
 
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { useParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ProgressBar } from '@/components/progress-bar'
 import {
   MapPin,
   Calendar,
@@ -23,21 +23,19 @@ import {
   Activity,
   BarChart3
 } from 'lucide-react'
-import { MachineRestockDialog } from '@/features/machine-restock'
 import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
 import { MachineStatus } from '@/components/machine-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
 import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
-import { useRestockVendingMachine } from '@/entities/vending-machines/use-restock-vending-machine'
 import { EditMachine } from '@/features/edit-machine'
+import { MachineRestock } from '@/features/machine-restock'
 
 export default function MachineDetailPage() {
   const { startDate, endDate } = getTodayRange()
 
   const params = useParams()
   const machineId = Number(params.id)
-  const [restockDialogOpen, setRestockDialogOpen] = useState(false)
 
   const machineQuery = useVendingMachine(machineId)
   const productsQuery = useVendingMachineProducts(machineId)
@@ -45,8 +43,6 @@ export default function MachineDetailPage() {
     startDate,
     endDate
   })
-
-  const restockMutation = useRestockVendingMachine()
 
   if (
     machineQuery.isLoading ||
@@ -71,212 +67,175 @@ export default function MachineDetailPage() {
   )
 
   return (
-    <>
-      <main className="space-y-6">
-        {/* Header */}
-        <div className="flex-1 flex items-center gap-4">
-          <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">
-            {machine.name}
-          </h1>
+    <main className="space-y-6">
+      {/* Header */}
+      <div className="flex-1 flex items-center gap-4">
+        <h1 className="text-3xl font-bold font-[family-name:var(--font-work-sans)]">
+          {machine.name}
+        </h1>
 
-          <MachineStatus status={machine.status} />
-        </div>
+        <MachineStatus status={machine.status} />
+      </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="overview" className="gap-2">
-              <Activity className="h-4 w-4" />
-              Обзор
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Аналитика
-            </TabsTrigger>
-            <TabsTrigger value="maintenance" className="gap-2">
-              <Wrench className="h-4 w-4" />
-              Обслуживание
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview" className="gap-2">
+            <Activity className="h-4 w-4" />
+            Обзор
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Аналитика
+          </TabsTrigger>
+          <TabsTrigger value="maintenance" className="gap-2">
+            <Wrench className="h-4 w-4" />
+            Обслуживание
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                <CardHeader className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Основная информация</CardTitle>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Basic Info */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle className="text-lg">Основная информация</CardTitle>
 
-                  <EditMachine machineId={machineId} />
-                </CardHeader>
+                <EditMachine machineId={machineId} />
+              </CardHeader>
 
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span>{machine.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span>Серийный номер: {machine.serial_number}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>Установлен: {machine.createdAtFormatted}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span>
-                      Последняя синхронизация: {machine.lastSeenFormatted}
-                    </span>
-                  </div>
-                </CardContent>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                  <span>{machine.location}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <span>Серийный номер: {machine.serial_number}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>Установлен: {machine.createdAtFormatted}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>
+                    Последняя синхронизация: {machine.lastSeenFormatted}
+                  </span>
+                </div>
+              </CardContent>
 
-                <CardFooter>
-                  <Button
-                    onClick={() => setRestockDialogOpen(true)}
-                    className="w-full"
-                  >
-                    Пополнить товары
-                  </Button>
-                </CardFooter>
-              </Card>
+              <CardFooter>
+                <MachineRestock
+                  machineId={machine.id}
+                  numSlots={machine.num_slots}
+                />
+              </CardFooter>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Текущий статус</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Заполненность</span>
-                      <span className="font-semibold">{fillPercentage}%</span>
-                    </div>
-
-                    <div className="w-full bg-gray-200 rounded-full h-3">
-                      <div
-                        className={`h-3 rounded-full transition-all ${
-                          fillPercentage > 80
-                            ? 'bg-green-500'
-                            : fillPercentage > 50
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                        }`}
-                        style={{ width: `${fillPercentage}%` }}
-                      />
-                    </div>
-
-                    <div className="text-xs text-muted-foreground">
-                      {products.length} из {machine.num_slots} товаров
-                    </div>
-                  </div>
-
-                  {machine.temperature && (
-                    <div className="flex items-center gap-2">
-                      <Thermometer className="h-4 w-4 text-muted-foreground" />
-                      <span>Температура: {machine.temperature}°C</span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Доходы за сегодня</CardTitle>
-                </CardHeader>
-
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-
-                      <span className="text-sm text-muted-foreground">
-                        Сегодня
-                      </span>
-                    </div>
-
-                    <div className="text-2xl font-bold">
-                      ₸{revenue.toLocaleString()}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Recent Activity */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Активность за сегодня</CardTitle>
+                <CardTitle className="text-lg">Текущий статус</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Заполненность</span>
+                    <span className="font-semibold">{fillPercentage}%</span>
+                  </div>
+
+                  <ProgressBar fillPercentage={fillPercentage} />
+
+                  <div className="text-xs text-muted-foreground">
+                    {products.length} из {machine.num_slots} товаров
+                  </div>
+                </div>
+
+                {machine.temperature && (
+                  <div className="flex items-center gap-2">
+                    <Thermometer className="h-4 w-4 text-muted-foreground" />
+                    <span>Температура: {machine.temperature}°C</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Доходы за сегодня</CardTitle>
               </CardHeader>
 
               <CardContent>
-                <div className="space-y-3 text-sm">
-                  {ordersQuery.data.orders.map(order => (
-                    <Fragment key={order.id}>
-                      <div className="flex justify-between items-center">
-                        <span>
-                          Продажа: {order.machine_products?.products?.name}
-                        </span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
 
-                        <span className="text-muted-foreground">
-                          {formatDate(order.created_at)}
-                        </span>
-                      </div>
+                    <span className="text-sm text-muted-foreground">
+                      Сегодня
+                    </span>
+                  </div>
 
-                      <Separator />
-                    </Fragment>
-                  ))}
+                  <div className="text-2xl font-bold">
+                    ₸{revenue.toLocaleString()}
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Аналитика продаж</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Здесь будут графики и детальная аналитика по этому аппарату
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Активность за сегодня</CardTitle>
+            </CardHeader>
 
-          <TabsContent value="maintenance">
-            <Card>
-              <CardHeader>
-                <CardTitle>История обслуживания</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
-                  Здесь будет история технического обслуживания
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+            <CardContent>
+              <div className="space-y-3 text-sm">
+                {ordersQuery.data.orders.map(order => (
+                  <Fragment key={order.id}>
+                    <div className="flex justify-between items-center">
+                      <span>
+                        Продажа: {order.machine_products?.products?.name}
+                      </span>
 
-      {restockDialogOpen && (
-        <MachineRestockDialog
-          machineId={machine.id}
-          slotsCount={machine.num_slots}
-          onOpenChange={setRestockDialogOpen}
-          onSubmit={async values => {
-            const activeSlots = values.slots.filter(slot => slot.maxCapacity)
+                      <span className="text-muted-foreground">
+                        {formatDate(order.created_at)}
+                      </span>
+                    </div>
 
-            const slots = activeSlots.map(slot => ({
-              slotIndex: slot.slotNumber,
-              productId: slot.product?.id ?? null,
-              currentStock: slot.restockQty,
-              maxCapacity: slot.maxCapacity
-            }))
+                    <Separator />
+                  </Fragment>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            await restockMutation.mutateAsync({ machineId, slots })
+        <TabsContent value="analytics">
+          <Card>
+            <CardHeader>
+              <CardTitle>Аналитика продаж</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Здесь будут графики и детальная аналитика по этому аппарату
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-            setRestockDialogOpen(false)
-          }}
-        />
-      )}
-    </>
+        <TabsContent value="maintenance">
+          <Card>
+            <CardHeader>
+              <CardTitle>История обслуживания</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">
+                Здесь будет история технического обслуживания
+              </p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </main>
   )
 }

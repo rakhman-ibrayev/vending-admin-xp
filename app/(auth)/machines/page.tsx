@@ -17,6 +17,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useVendingMachinesList } from '@/entities/vending-machines/use-vending-machines-list'
 import { useAddVendingMachine } from '@/entities/vending-machines/use-add-vending-machine'
 import { MachineStatus } from '@/components/machine-status'
+import { ProgressBar } from '@/components/progress-bar'
 
 const statusConfig = {
   online: {
@@ -194,18 +195,7 @@ export default function MachinesPage() {
                         <span>Температура: {machine.temperature}°C</span>
                       )}
                     </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${
-                          machine.fillPercentage > 80
-                            ? 'bg-green-500'
-                            : machine.fillPercentage > 50
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
-                        }`}
-                        style={{ width: `${machine.fillPercentage}%` }}
-                      />
-                    </div>
+                    <ProgressBar fillPercentage={machine.fillPercentage} />
                   </div>
 
                   {/* Last Sync */}
