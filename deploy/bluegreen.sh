@@ -41,8 +41,11 @@ docker compose up -d "$NEW"
 echo "⏳ Waiting for $NEW to be ready..."
 sleep 15
 
+# Get actual container name from docker-compose
+CONTAINER_NAME=$(docker compose ps -q "$NEW" | xargs docker inspect --format '{{.Name}}' | sed 's/\///')
+
 # Simple HTTP health check
-NEW_PORT=$(docker port "$NEW" 3000 | cut -d: -f2)
+NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 | cut -d: -f2)
 for i in {1..10}; do
   if curl -sf "http://localhost:$NEW_PORT" > /dev/null 2>&1; then
     echo "✅ $NEW is responding"
@@ -57,38 +60,21 @@ for i in {1..10}; do
   sleep 3
 done
 
-# Generate new Caddyfile with updated upstream
-CADDYFILE="$DEPLOY_ROOT/deploy/caddy/Caddyfile"
-if [ "$APP" = "prod" ]; then
-  DOMAIN="admin.expresspharm.kz"
-  PROD_UPSTREAM="$NEW"
-  DEV_UPSTREAM="web-dev-$ACTIVE"
-else
-  DOMAIN="admin-dev.expresspharm.kz"
-  PROD_UPSTREAM="web-prod-$ACTIVE"
-  DEV_UPSTREAM="$NEW"
-fi
-
-cat > "$CADDYFILE" <<EOF
-admin.expresspharm.kz {
-    reverse_proxy ${PROD_UPSTREAM}:3000
-}
-
-admin-dev.expresspharm.kz {
-    reverse_proxy ${DEV_UPSTREAM}:3000
-}
-EOF
-
-# Reload Caddy
-echo "🔄 Reloading Caddy configuration..."
-docker exec caddy caddy reload --config /etc/caddy/Caddyfile
+# Caddy automatically detects the running container via health checks
+echo "⏳ Waiting for Caddy to detect new upstream..."
+sleep 5
 
 # Verify switch worked
-sleep 3
+if [ "$APP" = "prod" ]; then
+  DOMAIN="admin.expresspharm.kz"
+else
+  DOMAIN="admin-dev.expresspharm.kz"
+fi
+
 if curl -sf "https://$DOMAIN" > /dev/null; then
   echo "✅ New version responding correctly"
 else
-  echo "⚠️  Warning: health check failed after switch"
+  echo "⚠️  Warning: health check failed"
 fi
 
 # Remove old container

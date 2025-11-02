@@ -1,4 +1,4 @@
-name: Build & Deploy to VPS
+name: Build & Deploy
 
 on:
   push:
@@ -100,10 +100,22 @@ jobs:
             git checkout ${{ github.ref_name }}
             git reset --hard origin/${{ github.ref_name }}
             
+            # Ensure script is executable
+            chmod +x deploy/bluegreen.sh
+            
             # Set environment variables for docker-compose
             export REGISTRY=ghcr.io
             export IMAGE_NAME=${{ github.repository }}
             export ENV_DIR=/srv/expresspharm/env
+            
+            # Ensure Caddy is running
+            if ! docker ps | grep -q caddy; then
+              echo "Starting Caddy..."
+              docker compose up -d caddy
+            else
+              echo "Restarting Caddy to reload config..."
+              docker compose restart caddy
+            fi
             
             # Run blue-green deployment
             if [ "${{ github.ref_name }}" = "main" ]; then
