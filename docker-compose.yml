@@ -1,0 +1,56 @@
+services:
+  web-prod-a:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:prod-latest
+    container_name: expresspharm-prod-a
+    env_file: ${ENV_DIR:-./env}/prod.env
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    networks: [ webnet ]
+
+  web-prod-b:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:prod-latest
+    container_name: expresspharm-prod-b
+    env_file: ${ENV_DIR:-./env}/prod.env
+    ports:
+      - "3002:3000"
+    restart: unless-stopped
+    networks: [ webnet ]
+
+  web-dev-a:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:dev-latest
+    container_name: expresspharm-dev-a
+    env_file: ${ENV_DIR:-./env}/dev.env
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    networks: [ webnet ]
+
+  web-dev-b:
+    image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:dev-latest
+    container_name: expresspharm-dev-b
+    env_file: ${ENV_DIR:-./env}/dev.env
+    ports:
+      - "3003:3000"
+    restart: unless-stopped
+    networks: [ webnet ]
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy:/etc/caddy
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [ webnet ]
+
+networks:
+  webnet:
+
+volumes:
+  caddy_data:
+  caddy_config:

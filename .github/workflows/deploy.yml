@@ -3,6 +3,19 @@ name: Build & Deploy to VPS
 on:
   push:
     branches: [ main, dev ]
+    paths-ignore:
+      - '**/*.md'
+      - '.vscode/**'
+      - '.idea/**'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+      - '.prettierrc*'
+      - '.eslintrc*'
+      - '*.config.js'
+      - '!next.config.js'
+      - '.github/**'
+      - '!.github/workflows/deploy.yml'
 
 permissions:
   contents: read
@@ -79,24 +92,22 @@ jobs:
           script: |
             set -ux
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+            
             cd /srv/expresspharm
             
+            # Pull latest deployment scripts
+            git fetch origin ${{ github.ref_name }}
+            git checkout ${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }}
+            
+            # Set environment variables for docker-compose
+            export REGISTRY=ghcr.io
+            export IMAGE_NAME=${{ github.repository }}
+            export ENV_DIR=/srv/expresspharm/env
+            
+            # Run blue-green deployment
             if [ "${{ github.ref_name }}" = "main" ]; then
-              docker compose pull web-prod caddy
-              docker compose up -d web-prod caddy --remove-orphans
+              ./deploy/bluegreen.sh prod
             else
-              docker compose pull web-dev caddy
-              docker compose up -d web-dev caddy --remove-orphans
+              ./deploy/bluegreen.sh dev
             fi
-            
-            echo "Deployed containers:"
-            docker ps --filter "name=expresspharm" --filter "name=caddy"
-            
-            echo "Recent logs:"
-            if [ "${{ github.ref_name }}" = "main" ]; then
-              docker compose logs --tail=20 web-prod
-            else
-              docker compose logs --tail=20 web-dev
-            fi
-            
-            docker image prune -f

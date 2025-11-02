@@ -1,0 +1,7 @@
+admin.expresspharm.kz {
+    reverse_proxy web-prod-a:3000
+}
+
+admin-dev.expresspharm.kz {
+    reverse_proxy web-dev-a:3000
+}
