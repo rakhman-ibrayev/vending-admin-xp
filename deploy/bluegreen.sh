@@ -35,6 +35,7 @@ fi
 
 readonly STATE_FILE="$DEPLOY_ROOT/.${APP}-active"
 readonly LOCK_FILE="$DEPLOY_ROOT/.${APP}-deploy.lock"
+readonly LOG_FILE="$DEPLOY_ROOT/deployments-${APP}.log"
 
 # ============================================================================
 # Utility Functions
@@ -45,7 +46,7 @@ log() {
   shift
   local msg="$*"
   local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo "[$timestamp] [$level] $msg"
+  echo "[$timestamp] [$level] $msg" | tee -a "$LOG_FILE"
 }
 
 log_info() { log "INFO" "$@"; }
@@ -70,7 +71,7 @@ rollback() {
   
   if [ -n "${NEW:-}" ]; then
     log_info "Stopping and removing new container: $NEW"
-    docker compose logs --tail=100 "$NEW"
+    docker compose logs --tail=100 "$NEW" | tee -a "$LOG_FILE"
     docker compose rm -sf "$NEW" 2>/dev/null || true
   fi
   
@@ -153,72 +154,15 @@ fi
 # Get actual container name from docker-compose
 CONTAINER_NAME=$(docker compose ps -q "$NEW" | xargs docker inspect --format '{{.Name}}' | sed 's/\///')
 
-# Determine a stable alias name for Caddy and ensure the alias points to the newly started container
-# This attaches a network alias (web-prod / web-dev) on the same network Caddy uses so Caddy DNS always
-# resolves a single upstream name regardless of which blue/green instance is active.
-if [ "$APP" = "prod" ]; then
-  ALIAS_NAME="web-prod"
-else
-  ALIAS_NAME="web-dev"
+if [ -z "$CONTAINER_NAME" ]; then
+  rollback "Failed to get container name for $NEW"
 fi
-
-# Find the network name Caddy is attached to (use the first network found)
-CADDY_NET=$(docker inspect --format '{{range $k,$v:=.NetworkSettings.Networks}}{{$k}}{{end}}' caddy 2>/dev/null || true)
-if [ -n "$CADDY_NET" ]; then
-  echo "Attaching alias $ALIAS_NAME on network $CADDY_NET to $CONTAINER_NAME"
-  docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME" || true
-
-  # Wait for Docker DNS / Caddy to see the alias. We wait up to 15s.
-  echo "Waiting for alias $ALIAS_NAME to propagate to network $CADDY_NET..."
-  ALIAS_OK=0
-  for i in $(seq 1 15); do
-    # Check if the alias appears in the container's network settings
-    if docker inspect "$CONTAINER_NAME" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"$ALIAS_NAME\""; then
-      echo "Alias $ALIAS_NAME present in container network (inspect)"
-      ALIAS_OK=1
-      break
-    fi
-
-    # Or check if Caddy can resolve the alias via getent hosts
-    if docker exec caddy sh -c "getent hosts $ALIAS_NAME >/dev/null 2>&1"; then
-      echo "Caddy resolves $ALIAS_NAME"
-      ALIAS_OK=1
-      break
-    fi
-
-    sleep 1
-  done
-
-  if [ "$ALIAS_OK" -ne 1 ]; then
-    echo "Warning: alias $ALIAS_NAME not visible after wait; continuing but Caddy may not resolve it yet"
-  fi
-
-  # NOTE: do not remove the old container yet — wait until the new upstream is reachable by Caddy.
-else
-  echo "Warning: could not determine Caddy network; skipping alias attach/detach"
-fi
-
-# Simple HTTP health check
-NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 | cut -d: -f2)
-for i in {1..10}; do
-  if curl -sf "http://localhost:$NEW_PORT" > /dev/null 2>&1; then
-    echo "✅ $NEW is responding"
-    break
-  fi
-  if [ $i -eq 10 ]; then
-    echo "❌ $NEW failed to respond, rolling back"
-    docker compose logs --tail=50 "$NEW"
-    docker compose rm -sf "$NEW"
-    exit 1
-  fi
-  sleep 3
-done
 
 log_info "New container started: $CONTAINER_NAME"
 
-# Wait for container to be ready (Next.js needs time to start)
+# Wait for container to be ready
 log_info "⏳ Waiting for $NEW to initialize..."
-sleep 5
+sleep $HEALTH_CHECK_INTERVAL
 
 # Determine alias and domain
 if [ "$APP" = "prod" ]; then
@@ -291,30 +235,9 @@ else
   fi
 fi
 
-# Before removing the old container, ensure Caddy resolves the new upstream and the public domain responds.
-if [ -n "$CADDY_NET" ]; then
-  OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" || true)
-  if [ -n "$OLD_CONTAINER_ID" ]; then
-    OLD_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" | sed 's/\///')
-    echo "Will disconnect old container $OLD_NAME from $CADDY_NET after confirming new upstream is live"
-  fi
-fi
-
-# Verify switch worked (public domain check)
-if curl -sf "https://$DOMAIN" > /dev/null; then
-  echo "✅ New version responding correctly"
-  # Now it's safe to remove the old container and disconnect its network alias
-  if [ -n "$CADDY_NET" ] && [ -n "$OLD_CONTAINER_ID" ]; then
-    echo "Disconnecting old container $OLD_NAME from $CADDY_NET"
-    docker network disconnect "$CADDY_NET" "$OLD_NAME" || true
-  fi
-
-  echo "🗑️  Removing old container $OLD"
-  docker compose rm -sf "$OLD"
-else
-  echo "⚠️  Warning: public domain health check failed; not removing old container to avoid downtime"
-  echo "Old container(s) retained for manual inspection"
-fi
+# ============================================================================
+# Health Checks
+# ============================================================================
 
 # Direct container health check
 NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 2>/dev/null | cut -d: -f2 || echo "")
@@ -331,12 +254,9 @@ HEALTH_CHECK_PASSED=0
 for i in $(seq 1 $HEALTH_CHECK_RETRIES); do
   log_info "Health check attempt $i/$HEALTH_CHECK_RETRIES"
   
-  # Get container status
-  CONTAINER_STATUS=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Status}}' 2>/dev/null || echo "unknown")
-  
-  # Check if container is still running (allow "starting" state during initial checks)
-  if [ "$CONTAINER_STATUS" != "running" ] && [ "$i" -gt 3 ]; then
-    rollback "Container stopped unexpectedly (status: $CONTAINER_STATUS)"
+  # Check if container is still running
+  if ! docker ps --filter "id=$(docker compose ps -q $NEW)" --filter "status=running" | grep -q .; then
+    rollback "Container stopped unexpectedly"
   fi
   
   # Try root endpoint
@@ -424,7 +344,22 @@ fi
 echo "$NEXT" > "$STATE_FILE"
 log_success "State file updated: $NEXT is now active"
 
+# Log deployment info
+cat << EOF >> "$LOG_FILE"
+========================================
+Deployment Summary
+========================================
+Environment: $APP
+Old Container: $OLD
+New Container: $NEW
+Domain: https://$DOMAIN
+Status: $([ $PUBLIC_CHECK_PASSED -eq 1 ] && echo "SUCCESS" || echo "SUCCESS (with warnings)")
+========================================
+
+EOF
+
 log_success "✅ Deployment complete: $NEW is now serving traffic"
+log_info "Deployment log: $LOG_FILE"
 
 # Cleanup old images
 log_info "Cleaning up unused Docker images..."
