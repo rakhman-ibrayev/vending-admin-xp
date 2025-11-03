@@ -167,16 +167,33 @@ CADDY_NET=$(docker inspect --format '{{range $k,$v:=.NetworkSettings.Networks}}{
 if [ -n "$CADDY_NET" ]; then
   echo "Attaching alias $ALIAS_NAME on network $CADDY_NET to $CONTAINER_NAME"
   docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME" || true
-  # Give Docker DNS a moment to propagate the new alias
-  sleep 2
 
-  # Remove alias from the old container (if present)
-  OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" || true)
-  if [ -n "$OLD_CONTAINER_ID" ]; then
-    OLD_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" | sed 's/\///')
-    echo "Disconnecting old container $OLD_NAME from $CADDY_NET"
-    docker network disconnect "$CADDY_NET" "$OLD_NAME" || true
+  # Wait for Docker DNS / Caddy to see the alias. We wait up to 15s.
+  echo "Waiting for alias $ALIAS_NAME to propagate to network $CADDY_NET..."
+  ALIAS_OK=0
+  for i in $(seq 1 15); do
+    # Check if the alias appears in the container's network settings
+    if docker inspect "$CONTAINER_NAME" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"$ALIAS_NAME\""; then
+      echo "Alias $ALIAS_NAME present in container network (inspect)"
+      ALIAS_OK=1
+      break
+    fi
+
+    # Or check if Caddy can resolve the alias via getent hosts
+    if docker exec caddy sh -c "getent hosts $ALIAS_NAME >/dev/null 2>&1"; then
+      echo "Caddy resolves $ALIAS_NAME"
+      ALIAS_OK=1
+      break
+    fi
+
+    sleep 1
+  done
+
+  if [ "$ALIAS_OK" -ne 1 ]; then
+    echo "Warning: alias $ALIAS_NAME not visible after wait; continuing but Caddy may not resolve it yet"
   fi
+
+  # NOTE: do not remove the old container yet — wait until the new upstream is reachable by Caddy.
 else
   echo "Warning: could not determine Caddy network; skipping alias attach/detach"
 fi
@@ -274,9 +291,30 @@ else
   fi
 fi
 
-# ============================================================================
-# Health Checks
-# ============================================================================
+# Before removing the old container, ensure Caddy resolves the new upstream and the public domain responds.
+if [ -n "$CADDY_NET" ]; then
+  OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" || true)
+  if [ -n "$OLD_CONTAINER_ID" ]; then
+    OLD_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" | sed 's/\///')
+    echo "Will disconnect old container $OLD_NAME from $CADDY_NET after confirming new upstream is live"
+  fi
+fi
+
+# Verify switch worked (public domain check)
+if curl -sf "https://$DOMAIN" > /dev/null; then
+  echo "✅ New version responding correctly"
+  # Now it's safe to remove the old container and disconnect its network alias
+  if [ -n "$CADDY_NET" ] && [ -n "$OLD_CONTAINER_ID" ]; then
+    echo "Disconnecting old container $OLD_NAME from $CADDY_NET"
+    docker network disconnect "$CADDY_NET" "$OLD_NAME" || true
+  fi
+
+  echo "🗑️  Removing old container $OLD"
+  docker compose rm -sf "$OLD"
+else
+  echo "⚠️  Warning: public domain health check failed; not removing old container to avoid downtime"
+  echo "Old container(s) retained for manual inspection"
+fi
 
 # Direct container health check
 NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 2>/dev/null | cut -d: -f2 || echo "")
