@@ -28,19 +28,21 @@ function ProductSelector({
 
   const options = useMemo(
     () =>
-      productsQuery.data?.products.map(product => ({
-        value: JSON.stringify({
-          id: product.id,
-          name: product.name,
-          sku: product.sku
-        }),
-        label: (
-          <span>
-            {product.name}{' '}
-            <span className="text-muted-foreground">- ₸{product.price}</span>
-          </span>
-        )
-      })) || [],
+      productsQuery.data?.products
+        .filter(product => product.stock)
+        .map(product => ({
+          value: JSON.stringify({
+            id: product.id,
+            name: product.name,
+            sku: product.sku
+          }),
+          label: (
+            <span>
+              {product.name}{' '}
+              <span className="text-muted-foreground">- ₸{product.price}</span>
+            </span>
+          )
+        })) || [],
     []
   )
 

@@ -19,7 +19,8 @@ export const getVendingMachineProducts = async (machineId: number) => {
         price,
         sku,
         image,
-        category
+        category,
+        stock
       )
     `
     )

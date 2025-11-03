@@ -19,21 +19,13 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus,
   Search,
   Filter,
-  MoreHorizontal,
-  Edit,
-  Trash2,
   Package,
   AlertTriangle,
   TrendingUp,
   TrendingDown
 } from 'lucide-react'
-import { AddProductDialog } from '@/components/add-product-dialog'
-import { StockUpdateDialog } from '@/components/stock-update-dialog'
-import { BulkRestockDialog } from '@/components/bulk-restock-dialog'
-import { QuickRestockActions } from '@/components/quick-restock-actions'
 import { useProductsList } from '@/entities/products/use-products-list'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 
@@ -43,13 +35,11 @@ export default function InventoryPage() {
   const products =
     productsQuery.data?.products.map(product => ({
       id: product.id,
-      name: product.name || '',
+      name: product.name,
       category: product.category || '',
       price: product.price,
-      totalStock: 12,
+      totalStock: product.stock,
       lowStockThreshold: 20,
-      cost: 18,
-      barcode: product.sku,
       salesThisMonth: 45
     })) || []
 
@@ -63,12 +53,6 @@ export default function InventoryPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('Все')
   const [stockFilter, setStockFilter] = useState('all')
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<
-    (typeof products)[0] | null
-  >(null)
-  const [isStockDialogOpen, setIsStockDialogOpen] = useState(false)
-  const [isBulkRestockOpen, setIsBulkRestockOpen] = useState(false)
 
   const filteredProducts = products.filter(product => {
     const matchesSearch =
@@ -94,346 +78,258 @@ export default function InventoryPage() {
 
   const outOfStockCount = products.filter(p => p.totalStock === 0).length
 
-  const totalValue = products.reduce((sum, p) => sum + p.totalStock * p.cost, 0)
-
-  const handleUpdateStock = (product: (typeof products)[0]) => {
-    setSelectedProduct(product)
-    setIsStockDialogOpen(true)
-  }
-
-  const handleQuickRestock = (productId: number, quantity: number) => {
-    console.log('Quick restock:', {
-      productId,
-      quantity,
-      reason: 'Быстрое пополнение'
-    })
-  }
+  const totalValue = products.reduce(
+    (sum, p) => sum + p.totalStock * p.price,
+    0
+  )
 
   return (
-    <>
-      <main>
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
-                  Управление товарами
-                </h1>
+    <main>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
+                Управление товарами
+              </h1>
 
-                <p className="text-muted-foreground mt-2">
-                  Контроль запасов и управление ассортиментом
-                </p>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  onClick={() => setIsBulkRestockOpen(true)}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <Package className="h-4 w-4" />
-                  Массовое пополнение
-                </Button>
-
-                <Button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  className="gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Добавить товар
-                </Button>
-              </div>
+              <p className="text-muted-foreground mt-2">
+                Контроль запасов и управление ассортиментом
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Всего товаров
-                </CardTitle>
-
-                <Package className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-2xl font-bold">{products.length}</div>
-
-                <p className="text-xs text-muted-foreground">
-                  активных позиций
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Низкие запасы
-                </CardTitle>
-
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">
-                  {lowStockCount}
-                </div>
-
-                <p className="text-xs text-muted-foreground">
-                  требуют пополнения
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Нет в наличии
-                </CardTitle>
-
-                <TrendingDown className="h-4 w-4 text-red-500" />
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {outOfStockCount}
-                </div>
-
-                <p className="text-xs text-muted-foreground">
-                  товаров закончилось
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Стоимость запасов
-                </CardTitle>
-
-                <TrendingUp className="h-4 w-4 text-green-500" />
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  ₸{totalValue.toLocaleString()}
-                </div>
-
-                <p className="text-xs text-muted-foreground">общая стоимость</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Restock Actions */}
-          <QuickRestockActions
-            products={products}
-            onQuickRestock={handleQuickRestock}
-          />
-
-          {/* Filters */}
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardContent>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Всего товаров
+              </CardTitle>
 
-                  <Input
-                    placeholder="Поиск товаров..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2 bg-transparent">
-                      <Filter className="h-4 w-4" />
-                      Категория: {categoryFilter}
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent>
-                    {categories.map(category => (
-                      <DropdownMenuItem
-                        key={category}
-                        onClick={() => setCategoryFilter(category)}
-                      >
-                        {category}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2 bg-transparent">
-                      <Package className="h-4 w-4" />
-                      Запасы:{' '}
-                      {stockFilter === 'all'
-                        ? 'Все'
-                        : stockFilter === 'low'
-                          ? 'Низкие'
-                          : 'Закончились'}
-                    </Button>
-                  </DropdownMenuTrigger>
-
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={() => setStockFilter('all')}>
-                      Все товары
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem onClick={() => setStockFilter('low')}>
-                      Низкие запасы
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem onClick={() => setStockFilter('out')}>
-                      Нет в наличии
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Products Table */}
-          <Card className="w-[calc(100vw-50px)] md:w-auto">
-            <CardHeader>
-              <CardTitle>Товары ({filteredProducts.length})</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
 
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Товар</TableHead>
+              <div className="text-2xl font-bold">{products.length}</div>
 
-                    <TableHead>Цена</TableHead>
+              <p className="text-xs text-muted-foreground">активных позиций</p>
+            </CardContent>
+          </Card>
 
-                    <TableHead>Запас</TableHead>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Низкие запасы
+              </CardTitle>
 
-                    <TableHead>Статус</TableHead>
+              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
 
-                    <TableHead>Продажи за месяц</TableHead>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">
+                {lowStockCount}
+              </div>
 
-                    <TableHead className="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <p className="text-xs text-muted-foreground">
+                требуют пополнения
+              </p>
+            </CardContent>
+          </Card>
 
-                <TableBody>
-                  {filteredProducts.map(product => {
-                    const isLowStock =
-                      product.totalStock <= product.lowStockThreshold &&
-                      product.totalStock > 0
-                    const isOutOfStock = product.totalStock === 0
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Нет в наличии
+              </CardTitle>
 
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <div className="font-medium">{product.name}</div>
-                        </TableCell>
+              <TrendingDown className="h-4 w-4 text-red-500" />
+            </CardHeader>
 
-                        <TableCell>₸{product.price}</TableCell>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {outOfStockCount}
+              </div>
 
-                        <TableCell>
-                          <span
-                            className={`font-medium ${
-                              isOutOfStock
-                                ? 'text-red-600'
-                                : isLowStock
-                                  ? 'text-yellow-600'
-                                  : 'text-foreground'
-                            }`}
-                          >
-                            {product.totalStock}
-                          </span>
-                        </TableCell>
+              <p className="text-xs text-muted-foreground">
+                товаров закончилось
+              </p>
+            </CardContent>
+          </Card>
 
-                        <TableCell>
-                          <ProductStatusBadge
-                            isLowStock={isLowStock}
-                            isOutOfStock={isOutOfStock}
-                          />
-                        </TableCell>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Стоимость запасов
+              </CardTitle>
 
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-green-500" />
-                            {product.salesThisMonth}
-                          </div>
-                        </TableCell>
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </CardHeader>
 
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ₸{totalValue.toLocaleString()}
+              </div>
 
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Редактировать
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateStock(product)}
-                              >
-                                <Package className="h-4 w-4 mr-2" />
-                                Управление запасами
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem className="text-destructive">
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Удалить
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-12">
-                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-
-                  <h3 className="text-lg font-semibold mb-2">
-                    Товары не найдены
-                  </h3>
-
-                  <p className="text-muted-foreground">
-                    Попробуйте изменить параметры поиска или добавить новый
-                    товар
-                  </p>
-                </div>
-              )}
+              <p className="text-xs text-muted-foreground">общая стоимость</p>
             </CardContent>
           </Card>
         </div>
-      </main>
 
-      <AddProductDialog
-        open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-      />
+        {/* Filters */}
+        <Card>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
-      <StockUpdateDialog
-        product={selectedProduct}
-        open={isStockDialogOpen}
-        onOpenChange={setIsStockDialogOpen}
-      />
+                <Input
+                  placeholder="Поиск товаров..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
 
-      <BulkRestockDialog
-        products={products}
-        open={isBulkRestockOpen}
-        onOpenChange={setIsBulkRestockOpen}
-      />
-    </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-transparent">
+                    <Filter className="h-4 w-4" />
+                    Категория: {categoryFilter}
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent>
+                  {categories.map(category => (
+                    <DropdownMenuItem
+                      key={category}
+                      onClick={() => setCategoryFilter(category)}
+                    >
+                      {category}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-transparent">
+                    <Package className="h-4 w-4" />
+                    Запасы:{' '}
+                    {stockFilter === 'all'
+                      ? 'Все'
+                      : stockFilter === 'low'
+                        ? 'Низкие'
+                        : 'Закончились'}
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setStockFilter('all')}>
+                    Все товары
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => setStockFilter('low')}>
+                    Низкие запасы
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem onClick={() => setStockFilter('out')}>
+                    Нет в наличии
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Products Table */}
+        <Card className="w-[calc(100vw-50px)] md:w-auto">
+          <CardHeader>
+            <CardTitle>Товары ({filteredProducts.length})</CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Товар</TableHead>
+
+                  <TableHead>Цена</TableHead>
+
+                  <TableHead>Запас</TableHead>
+
+                  <TableHead>Статус</TableHead>
+
+                  <TableHead className="text-right">Продажи за месяц</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {filteredProducts.map(product => {
+                  const isLowStock =
+                    product.totalStock <= product.lowStockThreshold &&
+                    product.totalStock > 0
+                  const isOutOfStock = product.totalStock === 0
+
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="font-medium">{product.name}</div>
+                      </TableCell>
+
+                      <TableCell>₸{product.price}</TableCell>
+
+                      <TableCell>
+                        <span
+                          className={`font-medium ${
+                            isOutOfStock
+                              ? 'text-red-600'
+                              : isLowStock
+                                ? 'text-yellow-600'
+                                : 'text-foreground'
+                          }`}
+                        >
+                          {product.totalStock}
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <ProductStatusBadge
+                          isLowStock={isLowStock}
+                          isOutOfStock={isOutOfStock}
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center gap-1 justify-end">
+                          <TrendingUp className="h-3 w-3 text-green-500" />
+                          {product.salesThisMonth}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
+              </TableBody>
+            </Table>
+
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-12">
+                <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+
+                <h3 className="text-lg font-semibold mb-2">
+                  Товары не найдены
+                </h3>
+
+                <p className="text-muted-foreground">
+                  Попробуйте изменить параметры поиска или добавить новый товар
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </main>
   )
 }

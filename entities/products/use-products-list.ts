@@ -5,7 +5,6 @@ export function useProductsList(
   ...args: Parameters<typeof productsQueries.list>
 ) {
   return useQuery({
-    ...productsQueries.list(...args),
-    staleTime: Infinity
+    ...productsQueries.list(...args)
   })
 }

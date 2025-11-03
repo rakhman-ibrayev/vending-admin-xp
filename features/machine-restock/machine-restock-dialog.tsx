@@ -10,8 +10,30 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { useFormik } from 'formik'
+import * as Yup from 'yup'
 import { useProductsList } from '@/entities/products/use-products-list'
 import { MachineCard } from './machine-card'
+
+const validationSchema = Yup.object().shape({
+  slots: Yup.array().of(
+    Yup.object().shape({
+      restockQty: Yup.number()
+        .min(0, 'Количество не может быть отрицательным')
+        .test('stock-available', function (value) {
+          const { product } = this.parent
+          if (!product || !value) return true
+
+          const availableStock = product.stock
+          if (value > availableStock) {
+            return this.createError({
+              message: `Недостаточно товара на складе`
+            })
+          }
+          return true
+        })
+    })
+  )
+})
 
 interface MachineRestockDialogProps {
   machineId: number
@@ -30,6 +52,7 @@ interface FormData {
       sku: string
       image: string | null
       category: string | null
+      stock: number
     } | null
     currentStock: number
     maxCapacity: number
@@ -66,6 +89,8 @@ export function MachineRestockDialog({
         }
       })
     },
+    validationSchema,
+    validateOnChange: true,
     onSubmit
   })
 
@@ -100,6 +125,18 @@ export function MachineRestockDialog({
     formik.setFieldValue(`slots.${index}.restockQty`, maxCapacity)
   }, [])
 
+  // Get validation error for a specific slot using Formik's errors
+  const getSlotValidationError = useCallback(
+    (slotIndex: number): string | null => {
+      const errorPath = formik.errors.slots?.[slotIndex]
+      return (errorPath as any)?.restockQty || null
+    },
+    [formik.errors.slots]
+  )
+
+  // Check if form has any validation errors
+  const hasValidationErrors = Boolean(formik.errors.slots)
+
   if (productsQuery.isLoading || machineProductsQuery.isLoading) {
     return (
       <Dialog open onOpenChange={onOpenChange}>
@@ -124,6 +161,7 @@ export function MachineRestockDialog({
           <div className="grid gap-4">
             {formik.values.slots.map((slotForm, index) => {
               const product = slotForm.product
+              const validationError = getSlotValidationError(index)
 
               return (
                 <MachineCard
@@ -133,9 +171,11 @@ export function MachineRestockDialog({
                   productName={product?.name || ''}
                   productSku={product?.sku || ''}
                   productPrice={product?.price || 0}
+                  productStock={product?.stock || 0}
                   isEmpty={!product}
                   restockQty={slotForm.restockQty}
                   maxCapacity={slotForm.maxCapacity}
+                  validationError={validationError}
                   onProductChange={handleProductChange}
                   onRemoveProduct={handleRemoveProduct}
                   onRestockQtyChange={handleRestockQtyChange}
@@ -159,7 +199,9 @@ export function MachineRestockDialog({
 
             <Button
               type="submit"
-              disabled={formik.isSubmitting || !formik.dirty}
+              disabled={
+                formik.isSubmitting || !formik.dirty || hasValidationErrors
+              }
               className="flex-1"
             >
               {formik.isSubmitting ? 'Сохраняем...' : 'Применить изменения'}

@@ -14,9 +14,11 @@ interface MachineCardProps {
   productName: string
   productSku: string
   productPrice: number
+  productStock: number
   isEmpty: boolean
   restockQty: number
   maxCapacity: number
+  validationError: string | null
   onProductChange: (index: number, productId: string) => void
   onRemoveProduct: (index: number) => void
   onRestockQtyChange: (index: number, qty: number) => void
@@ -31,9 +33,11 @@ const MachineCard = memo(
     productName,
     productSku,
     productPrice,
+    productStock,
     isEmpty,
     restockQty,
     maxCapacity,
+    validationError,
     onProductChange,
     onRemoveProduct,
     onRestockQtyChange,
@@ -43,7 +47,9 @@ const MachineCard = memo(
     const [isEditing, setIsEditing] = useState(false)
 
     return (
-      <Card className="p-3 bg-white">
+      <Card
+        className={`p-3 ${validationError ? 'bg-red-50 border-red-300' : 'bg-white'}`}
+      >
         <CardContent className="p-0">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -111,7 +117,7 @@ const MachineCard = memo(
                     onChange={e =>
                       onRestockQtyChange(index, Number(e.target.value))
                     }
-                    className="w-16 text-center"
+                    className={`w-16 text-center ${validationError ? 'border-red-500' : ''}`}
                     min="0"
                     max={maxCapacity}
                   />
@@ -128,7 +134,15 @@ const MachineCard = memo(
                     className="w-16 text-center"
                     min="0"
                   />
+
+                  <span>(На складе: {productStock})</span>
                 </div>
+
+                {validationError && (
+                  <div className="text-xs text-red-600 font-medium">
+                    {validationError}
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2">
                   <Button
