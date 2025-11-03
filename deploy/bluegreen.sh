@@ -153,9 +153,49 @@ fi
 # Get actual container name from docker-compose
 CONTAINER_NAME=$(docker compose ps -q "$NEW" | xargs docker inspect --format '{{.Name}}' | sed 's/\///')
 
-if [ -z "$CONTAINER_NAME" ]; then
-  rollback "Failed to get container name for $NEW"
+# Determine a stable alias name for Caddy and ensure the alias points to the newly started container
+# This attaches a network alias (web-prod / web-dev) on the same network Caddy uses so Caddy DNS always
+# resolves a single upstream name regardless of which blue/green instance is active.
+if [ "$APP" = "prod" ]; then
+  ALIAS_NAME="web-prod"
+else
+  ALIAS_NAME="web-dev"
 fi
+
+# Find the network name Caddy is attached to (use the first network found)
+CADDY_NET=$(docker inspect --format '{{range $k,$v:=.NetworkSettings.Networks}}{{$k}}{{end}}' caddy 2>/dev/null || true)
+if [ -n "$CADDY_NET" ]; then
+  echo "Attaching alias $ALIAS_NAME on network $CADDY_NET to $CONTAINER_NAME"
+  docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME" || true
+  # Give Docker DNS a moment to propagate the new alias
+  sleep 2
+
+  # Remove alias from the old container (if present)
+  OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" || true)
+  if [ -n "$OLD_CONTAINER_ID" ]; then
+    OLD_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" | sed 's/\///')
+    echo "Disconnecting old container $OLD_NAME from $CADDY_NET"
+    docker network disconnect "$CADDY_NET" "$OLD_NAME" || true
+  fi
+else
+  echo "Warning: could not determine Caddy network; skipping alias attach/detach"
+fi
+
+# Simple HTTP health check
+NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 | cut -d: -f2)
+for i in {1..10}; do
+  if curl -sf "http://localhost:$NEW_PORT" > /dev/null 2>&1; then
+    echo "✅ $NEW is responding"
+    break
+  fi
+  if [ $i -eq 10 ]; then
+    echo "❌ $NEW failed to respond, rolling back"
+    docker compose logs --tail=50 "$NEW"
+    docker compose rm -sf "$NEW"
+    exit 1
+  fi
+  sleep 3
+done
 
 log_info "New container started: $CONTAINER_NAME"
 
