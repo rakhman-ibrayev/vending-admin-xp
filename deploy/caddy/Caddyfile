@@ -1,5 +1,5 @@
 admin.expresspharm.kz {
-    reverse_proxy web-prod-a:3000 web-prod-b:3000 {
+    reverse_proxy web-prod:3000 {
         lb_policy first
         lb_try_duration 2s
         health_uri /api/health
@@ -9,7 +9,7 @@ admin.expresspharm.kz {
 }
 
 admin-dev.expresspharm.kz {
-    reverse_proxy web-dev-a:3000 web-dev-b:3000 {
+    reverse_proxy web-dev:3000 {
         lb_policy first
         lb_try_duration 2s
         health_uri /api/health
