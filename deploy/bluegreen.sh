@@ -35,7 +35,6 @@ fi
 
 readonly STATE_FILE="$DEPLOY_ROOT/.${APP}-active"
 readonly LOCK_FILE="$DEPLOY_ROOT/.${APP}-deploy.lock"
-readonly LOG_FILE="$DEPLOY_ROOT/deployments-${APP}.log"
 
 # ============================================================================
 # Utility Functions
@@ -46,7 +45,7 @@ log() {
   shift
   local msg="$*"
   local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo "[$timestamp] [$level] $msg" | tee -a "$LOG_FILE"
+  echo "[$timestamp] [$level] $msg"
 }
 
 log_info() { log "INFO" "$@"; }
@@ -71,7 +70,7 @@ rollback() {
   
   if [ -n "${NEW:-}" ]; then
     log_info "Stopping and removing new container: $NEW"
-    docker compose logs --tail=100 "$NEW" | tee -a "$LOG_FILE"
+    docker compose logs --tail=100 "$NEW"
     docker compose rm -sf "$NEW" 2>/dev/null || true
   fi
   
@@ -160,9 +159,9 @@ fi
 
 log_info "New container started: $CONTAINER_NAME"
 
-# Wait for container to be ready
+# Wait for container to be ready (Next.js needs time to start)
 log_info "⏳ Waiting for $NEW to initialize..."
-sleep $HEALTH_CHECK_INTERVAL
+sleep 5
 
 # Determine alias and domain
 if [ "$APP" = "prod" ]; then
@@ -254,9 +253,12 @@ HEALTH_CHECK_PASSED=0
 for i in $(seq 1 $HEALTH_CHECK_RETRIES); do
   log_info "Health check attempt $i/$HEALTH_CHECK_RETRIES"
   
-  # Check if container is still running
-  if ! docker ps --filter "id=$(docker compose ps -q $NEW)" --filter "status=running" | grep -q .; then
-    rollback "Container stopped unexpectedly"
+  # Get container status
+  CONTAINER_STATUS=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Status}}' 2>/dev/null || echo "unknown")
+  
+  # Check if container is still running (allow "starting" state during initial checks)
+  if [ "$CONTAINER_STATUS" != "running" ] && [ "$i" -gt 3 ]; then
+    rollback "Container stopped unexpectedly (status: $CONTAINER_STATUS)"
   fi
   
   # Try root endpoint
@@ -344,22 +346,7 @@ fi
 echo "$NEXT" > "$STATE_FILE"
 log_success "State file updated: $NEXT is now active"
 
-# Log deployment info
-cat << EOF >> "$LOG_FILE"
-========================================
-Deployment Summary
-========================================
-Environment: $APP
-Old Container: $OLD
-New Container: $NEW
-Domain: https://$DOMAIN
-Status: $([ $PUBLIC_CHECK_PASSED -eq 1 ] && echo "SUCCESS" || echo "SUCCESS (with warnings)")
-========================================
-
-EOF
-
 log_success "✅ Deployment complete: $NEW is now serving traffic"
-log_info "Deployment log: $LOG_FILE"
 
 # Cleanup old images
 log_info "Cleaning up unused Docker images..."
