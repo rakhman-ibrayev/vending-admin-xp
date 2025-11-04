@@ -106,7 +106,6 @@ jobs:
             # Set environment variables for docker-compose
             export REGISTRY=ghcr.io
             export IMAGE_NAME=${{ github.repository }}
-            export ENV_DIR=/srv/expresspharm/env
             
             # Ensure Caddy is running
             if ! docker ps | grep -q caddy; then
