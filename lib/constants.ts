@@ -1,0 +1,7 @@
+export const UTC_HOURS_OFFSET_KZ = 5 // Казахстанское время UTC+5
+
+export const MINUTES_IN_HOUR = 60
+
+export const SECONDS_IN_MINUTE = 60
+
+export const MILLISECONDS_IN_SECOND = 1000

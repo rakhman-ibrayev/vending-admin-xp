@@ -1,3 +1,4 @@
+import { convertKzDateToUTC } from '@/lib/utils'
 import { NextResponse } from 'next/server'
 
 export function buildResponse(
@@ -28,5 +29,7 @@ export function parseKaspiDate(dateStr: string): Date {
   const minute = parseInt(dateStr.slice(10, 12))
   const second = parseInt(dateStr.slice(12, 14))
 
-  return new Date(year, month, day, hour, minute, second)
+  const kaspiDate = new Date(Date.UTC(year, month, day, hour, minute, second))
+
+  return convertKzDateToUTC(kaspiDate)
 }
