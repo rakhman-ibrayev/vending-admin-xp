@@ -1,117 +1,50 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ============================================================================
-# Blue-Green Deployment Script
-# ============================================================================
 # Usage: ./bluegreen.sh <prod|dev> [--skip-confirmation]
-# 
-# This script performs a zero-downtime blue-green deployment by:
-# 1. Starting a new container instance
-# 2. Validating it's healthy
-# 3. Switching traffic via network alias
-# 4. Removing the old container
-# ============================================================================
 
-# Configuration
-readonly DEPLOY_ROOT="/srv/expresspharm"
-readonly HEALTH_CHECK_TIMEOUT=30
-readonly HEALTH_CHECK_RETRIES=10
-readonly HEALTH_CHECK_INTERVAL=3
-readonly CADDY_PROPAGATION_WAIT=15
-readonly CADDY_SWITCH_WAIT=10
-readonly DOMAINS_PROD="admin.expresspharm.kz"
-readonly DOMAINS_DEV="admin-dev.expresspharm.kz"
-
-# Parse arguments
 APP="${1:-}"
 SKIP_CONFIRMATION="${2:-}"
 
-# Validate environment
 if [[ ! "$APP" =~ ^(prod|dev)$ ]]; then
   echo "Usage: $0 <prod|dev> [--skip-confirmation]"
   exit 1
 fi
 
-readonly STATE_FILE="$DEPLOY_ROOT/.${APP}-active"
-readonly LOCK_FILE="$DEPLOY_ROOT/.${APP}-deploy.lock"
-
-# ============================================================================
-# Utility Functions
-# ============================================================================
+DEPLOY_ROOT="/srv/expresspharm"
+STATE_FILE="$DEPLOY_ROOT/.${APP}-active"
+LOCK_FILE="$DEPLOY_ROOT/.${APP}-deploy.lock"
+CADDY_CONTAINER="${CADDY_CONTAINER:-caddy}"
 
 log() {
-  local level="$1"
-  shift
-  local msg="$*"
-  local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-  echo "[$timestamp] [$level] $msg"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
 
-log_info() { log "INFO" "$@"; }
-log_warn() { log "WARN" "$@"; }
-log_error() { log "ERROR" "$@"; }
-log_success() { log "SUCCESS" "$@"; }
-
-cleanup() {
-  local exit_code=$?
-  if [ $exit_code -ne 0 ]; then
-    log_error "Deployment failed with exit code $exit_code"
-  fi
-  # Release lock
-  flock -u 200 2>/dev/null || true
-}
-
-trap cleanup EXIT
-
-rollback() {
-  local reason="$1"
-  log_error "Rolling back: $reason"
-  
+die() {
+  log "ERROR: $1"
   if [ -n "${NEW:-}" ]; then
-    log_info "Stopping and removing new container: $NEW"
-    docker compose logs --tail=100 "$NEW"
+    docker compose logs --tail=50 "$NEW"
     docker compose rm -sf "$NEW" 2>/dev/null || true
   fi
-  
-  log_error "Rollback complete. Old container $OLD is still running."
   exit 1
 }
 
-# ============================================================================
-# Pre-flight Checks
-# ============================================================================
+rollback() {
+  log "Rolling back..."
+  # Reconnect old container alias if needed
+  if [ -n "${OLD_CONTAINER_NAME:-}" ] && [ -n "${ALIAS_NAME:-}" ] && [ -n "${CADDY_NET:-}" ]; then
+    docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$OLD_CONTAINER_NAME" 2>/dev/null || true
+  fi
+  die "$1"
+}
 
 # Prevent concurrent deploys
 exec 200>"$LOCK_FILE"
-if ! flock -n 200; then
-  log_error "Deploy already in progress for $APP"
-  exit 1
-fi
+flock -n 200 || die "Deploy already in progress"
+trap 'flock -u 200' EXIT
 
-log_info "Starting blue-green deployment for $APP environment"
-
-# Verify Docker is available
-if ! command -v docker &> /dev/null; then
-  log_error "Docker is not installed or not in PATH"
-  exit 1
-fi
-
-# Verify docker compose is available
-if ! docker compose version &> /dev/null; then
-  log_error "Docker Compose is not available"
-  exit 1
-fi
-
-# Verify Caddy is running
-if ! docker ps --filter "name=caddy" --filter "status=running" | grep -q caddy; then
-  log_warn "Caddy container is not running - traffic routing may not work"
-fi
-
-# Determine current and next
-if [ ! -f "$STATE_FILE" ]; then
-  echo "a" > "$STATE_FILE"
-fi
+# Determine which container to deploy
+[ ! -f "$STATE_FILE" ] && echo "a" > "$STATE_FILE"
 ACTIVE=$(cat "$STATE_FILE")
 
 if [ "$ACTIVE" = "a" ]; then
@@ -124,237 +57,107 @@ else
   NEXT="a"
 fi
 
-# Production safety check
+# Production confirmation
 if [ "$APP" = "prod" ] && [ "$SKIP_CONFIRMATION" != "--skip-confirmation" ]; then
-  log_warn "⚠️  Production deployment: $OLD → $NEW"
-  read -p "Continue with production deployment? (yes/no): " -r
-  if [[ ! $REPLY =~ ^[Yy]es$ ]]; then
-    log_info "Deployment cancelled by user"
-    exit 0
-  fi
+  read -p "⚠️  Deploy to PRODUCTION ($OLD → $NEW)? (yes/no): " -r
+  [[ ! $REPLY =~ ^[Yy]es$ ]] && exit 0
 fi
 
-log_info "🔄 Deploying $APP: $OLD → $NEW"
+log "🔄 Deploying $APP: $OLD → $NEW"
 
-# ============================================================================
-# Deploy New Container
-# ============================================================================
-
-log_info "Pulling latest image for $NEW"
-if ! docker compose pull "$NEW"; then
-  rollback "Failed to pull Docker image"
-fi
-
-log_info "Starting new container: $NEW"
-if ! docker compose up -d "$NEW"; then
-  rollback "Failed to start new container"
-fi
-
-# Get actual container name from docker-compose
-CONTAINER_NAME=$(docker compose ps -q "$NEW" | xargs docker inspect --format '{{.Name}}' | sed 's/\///')
-
-if [ -z "$CONTAINER_NAME" ]; then
-  rollback "Failed to get container name for $NEW"
-fi
-
-log_info "New container started: $CONTAINER_NAME"
-
-# Wait for container to be ready (Next.js needs time to start)
-log_info "⏳ Waiting for $NEW to initialize..."
-sleep 5
-
-# Determine alias and domain
+# Set domain and alias
 if [ "$APP" = "prod" ]; then
   ALIAS_NAME="web-prod"
-  DOMAIN="$DOMAINS_PROD"
+  DOMAIN="https://admin.expresspharm.kz"
 else
   ALIAS_NAME="web-dev"
-  DOMAIN="$DOMAINS_DEV"
+  DOMAIN="https://admin-dev.expresspharm.kz"
 fi
 
-# ============================================================================
-# Network Configuration
-# ============================================================================
+# Pull and start new container
+log "Pulling $NEW..."
+docker compose pull --quiet "$NEW" || die "Failed to pull image"
 
-# Find the network name Caddy is attached to
-CADDY_NET=$(docker inspect --format '{{range $k,$v:=.NetworkSettings.Networks}}{{$k}}{{end}}' caddy 2>/dev/null || true)
+log "Starting $NEW..."
+docker compose up -d "$NEW" || die "Failed to start container"
 
-if [ -z "$CADDY_NET" ]; then
-  log_warn "Could not determine Caddy network; skipping alias management"
-else
-  log_info "Caddy is on network: $CADDY_NET"
-  
-  # Check if old container has the alias and remove it
-  OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" 2>/dev/null || true)
-  if [ -n "$OLD_CONTAINER_ID" ]; then
-    OLD_CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" 2>/dev/null | sed 's/\///' || true)
-    if [ -n "$OLD_CONTAINER_NAME" ]; then
-      # Check if old container has the alias
-      if docker inspect "$OLD_CONTAINER_NAME" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"$ALIAS_NAME\""; then
-        log_info "Removing alias $ALIAS_NAME from old container: $OLD_CONTAINER_NAME"
-        docker network disconnect "$CADDY_NET" "$OLD_CONTAINER_NAME" 2>/dev/null || true
-        # Reconnect without alias
-        docker network connect "$CADDY_NET" "$OLD_CONTAINER_NAME" 2>/dev/null || true
-      fi
-    fi
-  fi
-  
-  log_info "Attaching alias $ALIAS_NAME on network $CADDY_NET to $CONTAINER_NAME"
-  if ! docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME" 2>/dev/null; then
-    # Alias might already exist, try disconnecting and reconnecting
-    docker network disconnect "$CADDY_NET" "$CONTAINER_NAME" 2>/dev/null || true
-    if ! docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME"; then
-      rollback "Failed to attach network alias $ALIAS_NAME"
-    fi
-  fi
+NEW_ID=$(docker compose ps -q "$NEW" || true)
+[ -z "$NEW_ID" ] && die "Failed to get container ID for $NEW"
+CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$NEW_ID" | sed 's#^/##')
+[ -z "$CONTAINER_NAME" ] && die "Failed to get container name"
 
-  # Wait for Docker DNS / Caddy to see the alias
-  log_info "Waiting for alias $ALIAS_NAME to propagate..."
-  ALIAS_OK=0
-  for i in $(seq 1 $CADDY_PROPAGATION_WAIT); do
-    # Check if the alias appears in the container's network settings
-    if docker inspect "$CONTAINER_NAME" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null | grep -q "\"$ALIAS_NAME\""; then
-      log_info "✓ Alias $ALIAS_NAME confirmed in container network"
-      ALIAS_OK=1
-      break
-    fi
+log "Container started: $CONTAINER_NAME"
+log "Waiting 5s for Next.js to start..."
+sleep 5
 
-    # Or check if Caddy can resolve the alias
-    if docker exec caddy sh -c "getent hosts $ALIAS_NAME >/dev/null 2>&1" 2>/dev/null; then
-      log_info "✓ Caddy successfully resolves $ALIAS_NAME"
-      ALIAS_OK=1
-      break
-    fi
+# Attach network alias (both old and new will have it temporarily for zero-downtime)
+CADDY_NET=$(docker inspect --format '{{range $k,$v:=.NetworkSettings.Networks}}{{$k}}{{end}}' "$CADDY_CONTAINER" 2>/dev/null || true)
+[ -z "$CADDY_NET" ] && die "Cannot find Caddy network"
 
-    sleep 1
-  done
-
-  if [ "$ALIAS_OK" -ne 1 ]; then
-    log_warn "Alias $ALIAS_NAME not fully propagated; continuing with caution"
-  fi
+OLD_CONTAINER_ID=$(docker compose ps -q "$OLD" 2>/dev/null || true)
+if [ -n "$OLD_CONTAINER_ID" ]; then
+  OLD_CONTAINER_NAME=$(docker inspect --format '{{.Name}}' "$OLD_CONTAINER_ID" | sed 's#^/##')
 fi
 
-# ============================================================================
-# Health Checks
-# ============================================================================
-
-# Direct container health check
-NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 2>/dev/null | cut -d: -f2 || echo "")
-
-if [ -z "$NEW_PORT" ]; then
-  rollback "Failed to get port mapping for new container"
-fi
-
-log_info "New container exposed on port: $NEW_PORT"
-log_info "Running health checks..."
-
-# Check container health
-HEALTH_CHECK_PASSED=0
-for i in $(seq 1 $HEALTH_CHECK_RETRIES); do
-  log_info "Health check attempt $i/$HEALTH_CHECK_RETRIES"
-  
-  # Get container status
-  CONTAINER_STATUS=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Status}}' 2>/dev/null || echo "unknown")
-  
-  # Check if container is still running (allow "starting" state during initial checks)
-  if [ "$CONTAINER_STATUS" != "running" ] && [ "$i" -gt 3 ]; then
-    rollback "Container stopped unexpectedly (status: $CONTAINER_STATUS)"
-  fi
-  
-  # Try root endpoint
-  if curl -sf --max-time 5 "http://localhost:$NEW_PORT" > /dev/null 2>&1; then
-    log_success "✓ Root endpoint responding"
-    HEALTH_CHECK_PASSED=1
+log "Attaching alias $ALIAS_NAME to $CONTAINER_NAME on $CADDY_NET"
+for i in {1..3}; do
+  if docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$CONTAINER_NAME" 2>/dev/null; then
     break
   fi
-  
-  # Try health endpoint
-  if curl -sf --max-time 5 "http://localhost:$NEW_PORT/api/health" > /dev/null 2>&1; then
-    log_success "✓ Health endpoint responding"
-    HEALTH_CHECK_PASSED=1
-    break
-  fi
-  
-  if [ $i -eq $HEALTH_CHECK_RETRIES ]; then
-    rollback "Health checks failed after $HEALTH_CHECK_RETRIES attempts"
-  fi
-  
-  sleep $HEALTH_CHECK_INTERVAL
+  docker network disconnect "$CADDY_NET" "$CONTAINER_NAME" 2>/dev/null || true
+  sleep 2
+  [ $i -eq 3 ] && rollback "Failed to attach alias $ALIAS_NAME after retries"
 done
 
-if [ $HEALTH_CHECK_PASSED -eq 1 ]; then
-  log_success "✅ $NEW is healthy and responding"
-else
-  rollback "Health check validation failed"
-fi
+log "Waiting 5s for Caddy to detect new container..."
+sleep 5
 
-# Wait for Caddy to detect the new upstream
-log_info "⏳ Waiting for Caddy to detect new upstream..."
-sleep $CADDY_SWITCH_WAIT
+# Health check new container
+NEW_PORT=$(docker port "$CONTAINER_NAME" 3000 | cut -d: -f2)
+log "Health checking on port $NEW_PORT..."
 
-# Verify public domain access
-log_info "Verifying public domain access: https://$DOMAIN"
-PUBLIC_CHECK_PASSED=0
-
-for i in $(seq 1 5); do
-  if curl -sf --max-time 10 "https://$DOMAIN" > /dev/null 2>&1; then
-    log_success "✅ Public domain responding correctly"
-    PUBLIC_CHECK_PASSED=1
+for i in {1..10}; do
+  STATUS=$(docker inspect "$CONTAINER_NAME" --format='{{.State.Status}}')
+  
+  # Allow grace period for startup
+  if [ "$STATUS" != "running" ] && [ $i -gt 3 ]; then
+    die "Container crashed (status: $STATUS)"
+  fi
+  
+  # Check if responding
+  if curl -sf --max-time 5 "http://localhost:$NEW_PORT/api/health" > /dev/null 2>&1; then
+    log "✓ Health check passed"
     break
   fi
-  log_warn "Public domain check attempt $i/5 failed"
+  
+  [ $i -eq 10 ] && die "Health check failed after 10 attempts"
+  sleep 3
+done
+
+# Verify public access through Caddy
+log "Checking public domain: $DOMAIN"
+for i in {1..5}; do
+  if curl -sf --max-time 10 "$DOMAIN" > /dev/null 2>&1; then
+    log "✓ Public domain OK"
+    break
+  fi
+  [ $i -eq 5 ] && rollback "Public domain unreachable"
   sleep 2
 done
 
-if [ $PUBLIC_CHECK_PASSED -eq 0 ]; then
-  log_warn "⚠️  Public domain health check failed - proceeding with caution"
-  log_warn "Manual verification recommended: https://$DOMAIN"
+# Remove old container (after new one is validated)
+if [ -n "${OLD_CONTAINER_NAME:-}" ]; then
+  log "Disconnecting old container alias: $OLD_CONTAINER_NAME"
+  docker network disconnect "$CADDY_NET" "$OLD_CONTAINER_NAME" 2>/dev/null || true
+  sleep 3
+
+  log "Removing old container: $OLD"
+  docker compose rm -sf "$OLD" 2>/dev/null || log "Warning: could not remove $OLD"
 fi
 
-# ============================================================================
-# Cleanup Old Container
-# ============================================================================
-
-if [ $PUBLIC_CHECK_PASSED -eq 1 ]; then
-  log_info "Proceeding with old container removal"
-  
-  # Disconnect old container from network
-  if [ -n "$CADDY_NET" ] && [ -n "${OLD_CONTAINER_ID:-}" ] && [ -n "${OLD_CONTAINER_NAME:-}" ]; then
-    log_info "Disconnecting old container $OLD_CONTAINER_NAME from $CADDY_NET"
-    docker network disconnect "$CADDY_NET" "$OLD_CONTAINER_NAME" 2>/dev/null || true
-  fi
-
-  # Remove old container
-  log_info "🗑️  Removing old container: $OLD"
-  if ! docker compose rm -sf "$OLD" 2>/dev/null; then
-    log_warn "Failed to remove old container $OLD - may need manual cleanup"
-  else
-    log_success "Old container removed successfully"
-  fi
-else
-  log_warn "⚠️  Public domain health check failed"
-  log_warn "Old container $OLD retained for safety"
-  log_warn "Please verify deployment and manually remove old container if needed:"
-  log_warn "  docker compose rm -sf $OLD"
-fi
-
-# ============================================================================
-# Finalize Deployment
-# ============================================================================
-
-# Update state file
-echo "$NEXT" > "$STATE_FILE"
-log_success "State file updated: $NEXT is now active"
-
-log_success "✅ Deployment complete: $NEW is now serving traffic"
-
-# Cleanup old images
-log_info "Cleaning up unused Docker images..."
+# Update state and cleanup
+printf '%s\n' "$NEXT" > "$STATE_FILE"
 docker image prune -f > /dev/null 2>&1 || true
 
-# Display final status
-log_info ""
-log_info "Current status:"
-docker compose ps "$NEW" 2>/dev/null || true
-log_info ""
-log_success "Deployment finished successfully! 🎉"
+log "✅ Deployment complete: $NEW is now active"
+docker compose ps "$NEW"
