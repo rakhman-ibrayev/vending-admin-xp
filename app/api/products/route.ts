@@ -7,7 +7,9 @@ interface ProductStockUpdate {
   sku: string
   price: number
   stock: number
-  unit: string
+  unit: string | null
+  image: string | null
+  category: string | null
 }
 
 type ProductResponse = {
@@ -17,6 +19,8 @@ type ProductResponse = {
   price: number
   stock: number
   unit: string | null
+  image: string | null
+  category: string | null
 }
 
 /**
@@ -27,12 +31,13 @@ type ProductResponse = {
  *   - sku: артикул (строка, уникальный идентификатор)
  *   - price: цена (число)
  *   - stock: остаток (число)
- *   - unit: единица измерения (строка)
+ *   - unit: единица измерения (строка, может быть null)
+ *   - image: ссылка на изображение товара (строка, может быть null)
+ *   - category: категория товара (строка, может быть null)
  *
  * Логика работы (ежедневная синхронизация остатков):
  *   - Если товар с таким артикулом уже существует: обновляются все поля (наименование, цена, остаток, единица измерения)
  *   - Если товар новый: создается новая позиция с указанными данными
- *   - Если товар не передан в сегодняшнем массиве: его остаток устанавливается в 0
  *
  * Примеры:
  *   - День 1: передано 50 товаров → все обновлены/созданы
@@ -66,13 +71,6 @@ export async function POST(request: Request): RouteResponse<ProductResponse[]> {
 
     const supabase = await createClient()
 
-    // Get all SKUs from incoming payload
-    const incomingSkus = products.map(p => p.sku)
-
-    // Fetch all existing products from DB to identify missing ones
-    const { data: dbProducts } = await supabase.from('products').select('sku')
-
-    // This is atomic and handles both inserts and updates in one operation
     const { data: upsertedProducts } = await supabase
       .from('products')
       .upsert(
@@ -81,23 +79,13 @@ export async function POST(request: Request): RouteResponse<ProductResponse[]> {
           sku: p.sku,
           price: p.price,
           stock: p.stock,
-          unit: p.unit
+          unit: p.unit,
+          image: p.image,
+          category: p.category
         })),
         { onConflict: 'sku', ignoreDuplicates: false }
       )
       .select()
-
-    // Set stock to zero for products not present in today's payload
-    const missingSkus = (dbProducts ?? [])
-      .filter(p => !incomingSkus.includes(p.sku))
-      .map(p => p.sku)
-
-    if (missingSkus.length > 0) {
-      await supabase
-        .from('products')
-        .update({ stock: 0 })
-        .in('sku', missingSkus)
-    }
 
     return NextResponse.json({
       success: true,

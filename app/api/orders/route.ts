@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { RouteResponse } from '@/lib/types'
+import { convertUTCToKzDate } from '@/lib/utils'
 
 interface SaleResponse {
   sale_id: number
@@ -34,7 +35,7 @@ interface SaleResponse {
  *       {
  *         "sale_id": 123,              // Уникальный идентификатор продажи
  *         "machine_id": 5,             // Идентификатор аппарата
- *         "sale_time": "2025-11-04...", // Время продажи (UTC)
+ *         "sale_time": "2025-11-04...", // Время продажи (UTC+5) берется из даты возвращенной от каспи
  *         "quantity": 1,               // Количество (всегда 1)
  *         "amount": 350,               // Сумма продажи
  *         "product_identifier": "SNK123" // Артикул товара (SKU)
@@ -68,6 +69,7 @@ export async function GET(request: Request): RouteResponse<SaleResponse[]> {
         `
         id,
         machine_id,
+        date_paid,
         created_at,
         machine_product_id,
         machine_products (
@@ -79,20 +81,25 @@ export async function GET(request: Request): RouteResponse<SaleResponse[]> {
         )
       `
       )
-      .gte('created_at', startDate)
-      .lte('created_at', endDate)
       .eq('status', 'paid')
-      .order('created_at', { ascending: false })
+      .gte('date_paid', startDate)
+      .lte('date_paid', endDate)
+      .order('date_paid', { ascending: false })
 
     // Format response
-    const sales: SaleResponse[] = (data ?? []).map(order => ({
-      sale_id: order.id,
-      machine_id: order.machine_id,
-      sale_time: order.created_at,
-      quantity: 1,
-      amount: order.machine_products?.products?.price ?? null,
-      product_identifier: order.machine_products?.products?.sku ?? null
-    }))
+    const sales: SaleResponse[] = (data ?? []).map(order => {
+      const utcTime = order.date_paid || order.created_at
+      const kzTime = convertUTCToKzDate(new Date(utcTime))
+
+      return {
+        quantity: 1,
+        sale_id: order.id,
+        machine_id: order.machine_id,
+        sale_time: kzTime.toISOString(),
+        amount: order.machine_products?.products?.price ?? null,
+        product_identifier: order.machine_products?.products?.sku ?? null
+      }
+    })
 
     return NextResponse.json({ success: true, data: sales })
   } catch (error) {

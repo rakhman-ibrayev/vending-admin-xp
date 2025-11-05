@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
 import { MachineStatus } from '@/components/machine-status'
+import { OrderStatus } from '@/components/order-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
 import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
@@ -78,18 +79,23 @@ export default function MachineDetailPage() {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
+        <TabsList className="w-full">
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="h-4 w-4" />
-            Обзор
+
+            <span className="hidden md:inline">Обзор</span>
           </TabsTrigger>
+
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            Аналитика
+
+            <span className="hidden md:inline">Аналитика</span>
           </TabsTrigger>
+
           <TabsTrigger value="maintenance" className="gap-2">
             <Wrench className="h-4 w-4" />
-            Обслуживание
+
+            <span className="hidden md:inline">Обслуживание</span>
           </TabsTrigger>
         </TabsList>
 
@@ -192,14 +198,16 @@ export default function MachineDetailPage() {
               <div className="space-y-3 text-sm">
                 {ordersQuery.data.orders.map(order => (
                   <Fragment key={order.id}>
-                    <div className="flex justify-between items-center">
-                      <span>
-                        Продажа: {order.machine_products?.products?.name}
-                      </span>
+                    <div className="flex flex-col justify-between gap-2">
+                      <span>{order.machine_products?.products?.name}</span>
 
-                      <span className="text-muted-foreground">
-                        {formatDate(order.created_at)}
-                      </span>
+                      <div className="flex items-center justify-between gap-3">
+                        <OrderStatus status={order.status} />
+
+                        <span className="text-muted-foreground">
+                          {formatDate(order.created_at)}
+                        </span>
+                      </div>
                     </div>
 
                     <Separator />
