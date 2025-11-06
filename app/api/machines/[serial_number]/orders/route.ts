@@ -1,27 +1,37 @@
 import { vendProduct } from '@/lib/m109e/vend-product'
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { RouteResponse } from '@/lib/types'
+
+interface CreateOrderRequest {
+  slot_index: number
+}
+
+interface CreateOrderResponse {
+  id: number
+}
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ serial_number: string }> }
-) {
+): RouteResponse<CreateOrderResponse> {
   try {
     const supabase = await createClient()
-    const { slot_index } = await request.json()
+    const body: CreateOrderRequest = await request.json()
+    const { slot_index } = body
     const serial_number = (await params).serial_number
 
     // Validate input
     if (slot_index === undefined || slot_index === null) {
       return NextResponse.json(
-        { error: 'slot_index is required' },
+        { success: false, message: 'slot_index is required' },
         { status: 400 }
       )
     }
 
     if (typeof slot_index !== 'number' || slot_index < 1) {
       return NextResponse.json(
-        { error: 'slot_index must be a positive number' },
+        { success: false, message: 'slot_index must be a positive number' },
         { status: 400 }
       )
     }
@@ -35,18 +45,27 @@ export async function POST(
 
     if (machineError) {
       console.error('Error fetching machine:', machineError)
-      return NextResponse.json({ error: 'Machine not found' }, { status: 404 })
+      return NextResponse.json(
+        { success: false, message: 'Machine not found' },
+        { status: 404 }
+      )
     }
 
     // Check if machine is online
     if (machine.status !== 'online') {
-      return NextResponse.json({ error: 'Machine is offline' }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: 'Machine is offline' },
+        { status: 400 }
+      )
     }
 
     // Validate slot index
     if (slot_index > machine.num_slots) {
       return NextResponse.json(
-        { error: `Slot index must be between 1 and ${machine.num_slots}` },
+        {
+          success: false,
+          message: `Slot index must be between 1 and ${machine.num_slots}`
+        },
         { status: 400 }
       )
     }
@@ -75,7 +94,7 @@ export async function POST(
     if (productError) {
       console.error('Error fetching machine product:', productError)
       return NextResponse.json(
-        { error: 'Product not found in specified slot' },
+        { success: false, message: 'Product not found in specified slot' },
         { status: 404 }
       )
     }
@@ -94,14 +113,14 @@ export async function POST(
     if (transactionError) {
       console.error('Error in transaction:', transactionError)
       return NextResponse.json(
-        { error: 'Failed to process order' },
+        { success: false, message: 'Failed to process order' },
         { status: 500 }
       )
     }
 
     if (!result) {
       return NextResponse.json(
-        { error: 'No response from database' },
+        { success: false, message: 'No response from database' },
         { status: 500 }
       )
     }
@@ -110,26 +129,27 @@ export async function POST(
 
     if (response.error) {
       console.error('Transaction failed:', response.error)
-      return NextResponse.json({ error: response.error }, { status: 400 })
+      return NextResponse.json(
+        { success: false, message: response.error },
+        { status: 400 }
+      )
     }
 
     if (!response.order_id) {
       return NextResponse.json(
-        { error: 'No order ID returned' },
+        { success: false, message: 'No order ID returned' },
         { status: 500 }
       )
     }
 
     return NextResponse.json(
-      {
-        id: response.order_id
-      },
+      { success: true, data: { id: response.order_id } },
       { status: 201 }
     )
   } catch (error) {
     console.error('Unexpected error in order creation:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, message: 'Internal server error' },
       { status: 500 }
     )
   }

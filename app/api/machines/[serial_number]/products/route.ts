@@ -1,17 +1,38 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { RouteResponse } from '@/lib/types'
+
+interface MachineProductResponse {
+  id: number
+  slot_index: number
+  current_stock: number
+  max_capacity: number
+  last_restocked: string | null
+  created_at: string
+  products: {
+    id: number
+    name: string
+    price: number
+    sku: string
+    image: string | null
+    category: string | null
+  } | null
+  vending_machines: {
+    serial_number: string
+  } | null
+}
 
 export async function GET(
   _: Request,
   { params }: { params: { serial_number: string } }
-) {
+): RouteResponse<MachineProductResponse[]> {
   try {
     const supabase = await createClient()
     const serial_number = (await params).serial_number
 
     if (!serial_number) {
       return NextResponse.json(
-        { error: 'Serial number is required' },
+        { success: false, message: 'Serial number is required' },
         { status: 400 }
       )
     }
@@ -24,7 +45,10 @@ export async function GET(
       .single()
 
     if (machineError || !machine) {
-      return NextResponse.json({ error: 'Machine not found' }, { status: 404 })
+      return NextResponse.json(
+        { success: false, message: 'Machine not found' },
+        { status: 404 }
+      )
     }
 
     // Then get products for that specific machine
@@ -56,7 +80,10 @@ export async function GET(
 
     if (error) {
       console.error('Error fetching products:', error)
-      return NextResponse.json({ error: 'Products not found' }, { status: 404 })
+      return NextResponse.json(
+        { success: false, message: 'Products not found' },
+        { status: 404 }
+      )
     }
 
     // Update last_seen timestamp
@@ -71,11 +98,14 @@ export async function GET(
       // But log it for monitoring
     }
 
-    return NextResponse.json(products)
+    return NextResponse.json({
+      success: true,
+      data: products as MachineProductResponse[]
+    })
   } catch (error) {
     console.error('Unexpected error fetching machine:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, message: 'Internal server error' },
       { status: 500 }
     )
   }

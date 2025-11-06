@@ -1,17 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { RouteResponse } from '@/lib/types'
+import type { Tables } from '@/lib/supabase/database.types'
 
 export async function GET(
   _: Request,
   { params }: { params: { serial_number: string } }
-) {
+): RouteResponse<Tables<'vending_machines'>> {
   try {
     const supabase = await createClient()
     const serial_number = (await params).serial_number
 
     if (!serial_number) {
       return NextResponse.json(
-        { error: 'Serial number is required' },
+        { success: false, message: 'Serial number is required' },
         { status: 400 }
       )
     }
@@ -25,7 +27,10 @@ export async function GET(
 
     if (error) {
       console.error('Error fetching machine:', error)
-      return NextResponse.json({ error: 'Machine not found' }, { status: 404 })
+      return NextResponse.json(
+        { success: false, message: 'Machine not found' },
+        { status: 404 }
+      )
     }
 
     // Update last_seen timestamp
@@ -41,11 +46,11 @@ export async function GET(
     }
 
     // Return all machine data - let the vending machine use what it needs
-    return NextResponse.json(machine)
+    return NextResponse.json({ success: true, data: machine })
   } catch (error) {
     console.error('Unexpected error fetching machine:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, message: 'Internal server error' },
       { status: 500 }
     )
   }
