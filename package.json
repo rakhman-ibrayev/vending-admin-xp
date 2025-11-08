@@ -12,7 +12,8 @@
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",
     "supabase:types": "npx supabase gen types typescript --local > lib/supabase/database.types.ts",
-    "supabase:reset": "npx supabase db reset"
+    "supabase:reset": "npx supabase db reset",
+    "supabase:status": "npx supabase status"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

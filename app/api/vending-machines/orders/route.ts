@@ -1,25 +1,21 @@
+import { NextRequest, NextResponse } from 'next/server'
 import { vendProduct } from '@/lib/m109e/vend-product'
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
+import { withMachineAuth } from '@/lib/supabase/machine-decorator'
+import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
 
 interface CreateOrderRequest {
   slot_index: number
 }
 
-interface CreateOrderResponse {
-  id: number
-}
-
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ serial_number: string }> }
-): RouteResponse<CreateOrderResponse> {
+async function createOrder(
+  machine: Machine,
+  req: NextRequest
+): RouteResponse<{ id: number }> {
   try {
-    const supabase = await createClient()
-    const body: CreateOrderRequest = await request.json()
+    const body: CreateOrderRequest = await req.json()
     const { slot_index } = body
-    const serial_number = (await params).serial_number
 
     // Validate input
     if (slot_index === undefined || slot_index === null) {
@@ -36,20 +32,7 @@ export async function POST(
       )
     }
 
-    // 1) Retrieve the machine data by serial_number
-    const { data: machine, error: machineError } = await supabase
-      .from('vending_machines')
-      .select('id, status, num_slots')
-      .eq('serial_number', serial_number)
-      .single()
-
-    if (machineError) {
-      console.error('Error fetching machine:', machineError)
-      return NextResponse.json(
-        { success: false, message: 'Machine not found' },
-        { status: 404 }
-      )
-    }
+    const supabase = createDangerousServerClient()
 
     // Check if machine is online
     if (machine.status !== 'online') {
@@ -154,3 +137,5 @@ export async function POST(
     )
   }
 }
+
+export const POST = withMachineAuth(createOrder)

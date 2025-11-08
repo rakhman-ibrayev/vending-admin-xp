@@ -125,7 +125,7 @@
       ]
     },
     {
-      "name": "Products",
+      "name": "1C Integration",
       "item": [
         {
           "name": "Update Product Stock (1C Sync)",
@@ -142,27 +142,22 @@
               "raw": "[\n  {\n    \"name\": \"Аспирин\",\n    \"sku\": \"ASP-100\",\n    \"price\": 150,\n    \"stock\": 100,\n    \"unit\": \"таб\",\n    \"category\": \"Лекарства\",\n    \"image\": \"https://example.com/aspirin.jpg\"\n  },\n  {\n    \"name\": \"Парацетамол\",\n    \"sku\": \"PAR-500\",\n    \"price\": 140,\n    \"stock\": 80,\n    \"unit\": \"таб\",\n    \"category\": \"Лекарства\",\n    \"image\": \"https://example.com/paracetamol.jpg\"\n  }\n]"
             },
             "url": {
-              "raw": "{{base_url}}/api/products",
+              "raw": "{{base_url}}/api/1c/products",
               "host": ["{{base_url}}"],
-              "path": ["api", "products"]
+              "path": ["api", "1c", "products"]
             },
             "description": "Update product stock from 1C system. Creates new products or updates existing ones based on SKU."
           }
-        }
-      ]
-    },
-    {
-      "name": "Orders",
-      "item": [
+        },
         {
           "name": "Get Sales Data",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/orders?start_date=2025-11-01T00:00:00Z&end_date=2025-11-07T23:59:59Z",
+              "raw": "{{base_url}}/api/1c/orders?start_date=2025-11-01T00:00:00Z&end_date=2025-11-07T23:59:59Z",
               "host": ["{{base_url}}"],
-              "path": ["api", "orders"],
+              "path": ["api", "1c", "orders"],
               "query": [
                 {
                   "key": "start_date",
@@ -182,45 +177,109 @@
       ]
     },
     {
-      "name": "Machines",
+      "name": "Vending Machines (RLS Bypass)",
       "item": [
         {
           "name": "Get Machine Info",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/machines/VM001",
+              "raw": "{{base_url}}/api/vending-machines",
               "host": ["{{base_url}}"],
-              "path": ["api", "machines", "VM001"]
+              "path": ["api", "vending-machines"]
             },
-            "description": "Get information about a specific vending machine by serial number"
+            "description": "Get vending machine information (bypasses RLS, uses serial number auth)"
           }
         },
         {
           "name": "Get Machine Products",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/machines/VM001/products",
+              "raw": "{{base_url}}/api/vending-machines/products",
               "host": ["{{base_url}}"],
-              "path": ["api", "machines", "VM001", "products"]
+              "path": ["api", "vending-machines", "products"]
             },
-            "description": "Get products loaded in a specific vending machine"
+            "description": "Get products loaded in vending machine (bypasses RLS)"
           }
         },
         {
-          "name": "Get Machine Orders",
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slot_index\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "orders"]
+            },
+            "description": "Create a new order from vending machine (bypasses RLS, updates stock)"
+          }
+        },
+        {
+          "name": "Get Order Details",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/machines/VM001/orders",
+              "raw": "{{base_url}}/api/vending-machines/orders/1",
               "host": ["{{base_url}}"],
-              "path": ["api", "machines", "VM001", "orders"]
+              "path": ["api", "vending-machines", "orders", "1"]
             },
-            "description": "Get orders from a specific vending machine"
+            "description": "Get order details for vending machine (bypasses RLS)"
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/orders/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "orders", "1", "cancel"]
+            },
+            "description": "Cancel an order from vending machine (bypasses RLS)"
           }
         }
       ]

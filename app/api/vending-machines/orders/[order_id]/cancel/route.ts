@@ -1,34 +1,34 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
+import { withMachineAuth } from '@/lib/supabase/machine-decorator'
+import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
 
-interface CancelOrderResponse {
-  id: number
-  status: string
-}
-
-export async function PATCH(
-  _: Request,
+async function cancelOrder(
+  machine: Machine,
+  _: NextRequest,
   { params }: { params: Promise<{ order_id: number }> }
-): RouteResponse<CancelOrderResponse> {
+): RouteResponse<{ id: number; status: string }> {
   try {
-    const supabase = await createClient()
-    const { order_id } = await params
+    const { order_id: orderId } = await params
 
-    if (!order_id) {
+    if (!orderId || isNaN(orderId)) {
       return NextResponse.json(
-        { success: false, message: 'Order ID is required' },
+        { success: false, message: 'Invalid order ID' },
         { status: 400 }
       )
     }
 
-    // Update the order
+    const supabase = createDangerousServerClient()
+
+    // Update the order - ensure it belongs to this machine
     const { data: order, error } = await supabase
       .from('orders')
       .update({
         status: 'cancelled'
       })
-      .eq('id', order_id)
+      .eq('id', orderId)
+      .eq('machine_id', machine.id) // Ensure order belongs to this machine
       .select(
         `
         id,
@@ -55,3 +55,5 @@ export async function PATCH(
     )
   }
 }
+
+export const PATCH = withMachineAuth(cancelOrder)

@@ -1,5 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
+import { withMachineAuth } from '@/lib/supabase/machine-decorator'
+import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
 
 interface MachineProductResponse {
@@ -17,41 +19,15 @@ interface MachineProductResponse {
     image: string | null
     category: string | null
   } | null
-  vending_machines: {
-    serial_number: string
-  } | null
 }
 
-export async function GET(
-  _: Request,
-  { params }: { params: { serial_number: string } }
+async function getMachineProducts(
+  machine: Machine
 ): RouteResponse<MachineProductResponse[]> {
   try {
-    const supabase = await createClient()
-    const serial_number = (await params).serial_number
+    const supabase = createDangerousServerClient()
 
-    if (!serial_number) {
-      return NextResponse.json(
-        { success: false, message: 'Serial number is required' },
-        { status: 400 }
-      )
-    }
-
-    // First, get the machine to verify it exists and get its ID
-    const { data: machine, error: machineError } = await supabase
-      .from('vending_machines')
-      .select('id, serial_number, name, location, status')
-      .eq('serial_number', serial_number)
-      .single()
-
-    if (machineError || !machine) {
-      return NextResponse.json(
-        { success: false, message: 'Machine not found' },
-        { status: 404 }
-      )
-    }
-
-    // Then get products for that specific machine
+    // Get products for that specific machine
     const { data: products, error } = await supabase
       .from('machine_products')
       .select(
@@ -69,9 +45,6 @@ export async function GET(
           sku,
           image,
           category
-        ),
-        vending_machines (
-          serial_number
         )
       `
       )
@@ -103,10 +76,12 @@ export async function GET(
       data: products as MachineProductResponse[]
     })
   } catch (error) {
-    console.error('Unexpected error fetching machine:', error)
+    console.error('Unexpected error fetching machine products:', error)
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }
     )
   }
 }
+
+export const GET = withMachineAuth(getMachineProducts)

@@ -32,7 +32,7 @@ services:
     networks: [ webnet ]
 
   caddy:
-    image: caddy:latest
+    image: caddy:2.10
     container_name: caddy
     restart: unless-stopped
     ports:

@@ -84,6 +84,8 @@ jobs:
             NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
             NEXT_PUBLIC_PHARMEXPRESS_COMPANY_BIN=${{ vars.NEXT_PUBLIC_PHARMEXPRESS_COMPANY_BIN }}
             NEXT_PUBLIC_VENDING_MACHINE_HEARTBEAT_INTERVAL_MINS=${{ vars.NEXT_PUBLIC_VENDING_MACHINE_HEARTBEAT_INTERVAL_MINS }}
+          secrets: |
+            "supabase_service_role_key=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}"
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

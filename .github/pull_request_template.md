@@ -5,8 +5,7 @@ https://linear.app/pharmexpress/issue/
 ---
 
 ## 🧠 Summary
-<!-- High-level summary of what this PR does and why it matters. 
-Keep it short and informative for someone unfamiliar with the context. -->
+<!-- High-level summary of what this PR does and why it matters. Keep it short. -->
 
 ---
 
@@ -15,19 +14,16 @@ Keep it short and informative for someone unfamiliar with the context. -->
 
 - 
 - 
-- 
 
 ---
 
 ## ✅ How to Test
-<!-- Exact steps for QA/reviewers to validate this change locally or in dev. 
-Include relevant URLs, commands, or test cases. -->
+<!-- Exact steps for QA/reviewers to validate this change locally or in dev. -->
 
 1. 
 2. 
-3. 
 
-**Expected Result:** 
+**Expected Result:**
 
 ---
 
@@ -55,17 +51,3 @@ Include relevant URLs, commands, or test cases. -->
 - [ ] Proper error handling & types
 - [ ] Added or updated tests (if relevant)
 - [ ] Verified locally / staging
-
----
-
-## 🫡 Reviewer Notes
-<!-- Optional: any specific areas you want feedback on (architecture, naming, UX flow, etc.) -->
-
----
-
-## 🧹 Post-merge Actions
-<!-- Anything that should happen after merging (deployment, announcement, doc updates, etc.) -->
-
-- [ ] Deploy to production
-- [ ] Notify stakeholders
-- [ ] Update documentation
