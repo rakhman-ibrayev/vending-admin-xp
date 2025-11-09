@@ -53,7 +53,7 @@ async function createOrder(
       )
     }
 
-    // 2) Use machine's id and slot_index to retrieve the machine_product
+    // Use machine's id and slot_index to retrieve the machine_product
     const { data: machineProduct, error: productError } = await supabase
       .from('machine_products')
       .select(
