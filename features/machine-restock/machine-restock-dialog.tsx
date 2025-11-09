@@ -18,7 +18,8 @@ const validationSchema = Yup.object().shape({
   slots: Yup.array().of(
     Yup.object().shape({
       restockQty: Yup.number()
-        .min(0, 'Количество не может быть отрицательным')
+        .nullable()
+        .min(1, 'Количество не может быть 0')
         .test('stock-available', function (value) {
           const { product } = this.parent
           if (!product || !value) return true
@@ -56,7 +57,7 @@ interface FormData {
     } | null
     currentStock: number
     maxCapacity: number
-    restockQty: number
+    restockQty: number | null
   }[]
 }
 
@@ -85,7 +86,7 @@ export function MachineRestockDialog({
           product: slotData?.products || null,
           currentStock: slotData?.current_stock ?? 0,
           maxCapacity: slotData?.max_capacity ?? 0,
-          restockQty: slotData?.current_stock ?? 0
+          restockQty: slotData?.current_stock ?? null
         }
       })
     },
@@ -107,7 +108,7 @@ export function MachineRestockDialog({
 
   const handleRemoveProduct = useCallback((index: number) => {
     formik.setFieldValue(`slots.${index}.product`, null)
-    formik.setFieldValue(`slots.${index}.restockQty`, 0)
+    formik.setFieldValue(`slots.${index}.restockQty`, null)
   }, [])
 
   const handleRestockQtyChange = useCallback((index: number, qty: number) => {
@@ -173,7 +174,7 @@ export function MachineRestockDialog({
                   productPrice={product?.price || 0}
                   productStock={product?.stock || 0}
                   isEmpty={!product}
-                  restockQty={slotForm.restockQty}
+                  restockQty={slotForm.restockQty || 0}
                   maxCapacity={slotForm.maxCapacity}
                   validationError={validationError}
                   onProductChange={handleProductChange}

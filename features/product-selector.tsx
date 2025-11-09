@@ -24,7 +24,7 @@ function ProductSelector({
   onCancelClick,
   className
 }: ProductSelectorProps) {
-  const productsQuery = useProductsList()
+  const productsQuery = useProductsList({ minStock: 1 })
 
   const options = useMemo(
     () =>

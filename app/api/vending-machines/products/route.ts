@@ -49,6 +49,8 @@ async function getMachineProducts(
       `
       )
       .eq('machine_id', machine.id)
+      .gt('current_stock', 0)
+      .gt('products.price', 0)
       .order('slot_index')
 
     if (error) {

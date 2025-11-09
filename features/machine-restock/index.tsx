@@ -30,7 +30,7 @@ const MachineRestock = ({ machineId, numSlots }: MachineRestockProps) => {
             const slots = activeSlots.map(slot => ({
               slotIndex: slot.slotNumber,
               productId: slot.product?.id ?? null,
-              currentStock: slot.restockQty,
+              currentStock: slot.restockQty ?? 0,
               maxCapacity: slot.maxCapacity
             }))
 
