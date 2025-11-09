@@ -1,5 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
+import { withMachineAuth } from '@/lib/supabase/machine-decorator'
+import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
 
 interface OrderDetailsResponse {
@@ -12,20 +14,22 @@ interface OrderDetailsResponse {
   machine_command: string | null
 }
 
-export async function GET(
-  _: Request,
+async function getOrderDetails(
+  machine: Machine,
+  _: NextRequest,
   { params }: { params: Promise<{ order_id: number }> }
 ): RouteResponse<OrderDetailsResponse> {
   try {
-    const supabase = await createClient()
-    const { order_id } = await params
+    const { order_id: orderId } = await params
 
-    if (!order_id) {
+    if (!orderId || isNaN(orderId)) {
       return NextResponse.json(
-        { success: false, message: 'Order ID is required' },
+        { success: false, message: 'Invalid order ID' },
         { status: 400 }
       )
     }
+
+    const supabase = createDangerousServerClient()
 
     // Get minimal order data for vending machine status check
     const { data: order, error } = await supabase
@@ -45,10 +49,11 @@ export async function GET(
         )
       `
       )
-      .eq('id', order_id)
+      .eq('id', orderId)
+      .eq('machine_id', machine.id) // Ensure order belongs to this machine
       .single()
 
-    if (error) {
+    if (error || !order) {
       console.error('Error fetching order:', error)
       return NextResponse.json(
         { success: false, message: 'Order not found' },
@@ -76,3 +81,5 @@ export async function GET(
     )
   }
 }
+
+export const GET = withMachineAuth(getOrderDetails)

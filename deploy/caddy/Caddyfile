@@ -1,19 +1,45 @@
 admin.expresspharm.kz {
-    reverse_proxy web-prod:3000 {
-        lb_policy first
-        lb_try_duration 2s
-        health_uri /api/health
-        health_interval 10s
-        health_status 2xx
-    }
+	# Kaspi integration - strict IP whitelist (only these IPs can access)
+	@kaspi {
+		path /api/kaspi*
+	}
+	handle @kaspi {
+		@kaspi_allowed remote_ip 194.187.247.152 194.187.245.108 197.187.244.108
+		handle @kaspi_allowed {
+			reverse_proxy web-prod:3000
+		}
+		respond "Access denied" 403
+	}
+
+	# 1C integration - strict IP whitelist (only these IPs can access)
+	@onec {
+		path /api/1c*
+	}
+	handle @onec {
+		@onec_allowed remote_ip 95.56.242.156
+		handle @onec_allowed {
+			reverse_proxy web-prod:3000
+		}
+		respond "Access denied" 403
+	}
+
+	# Main application
+	reverse_proxy web-prod:3000 {
+		lb_policy first
+		lb_try_duration 2s
+		health_uri /api/health
+		health_interval 10s
+		health_status 2xx
+	}
 }
 
 admin-dev.expresspharm.kz {
-    reverse_proxy web-dev:3000 {
-        lb_policy first
-        lb_try_duration 2s
-        health_uri /api/health
-        health_interval 10s
-        health_status 2xx
-    }
+	# Development environment - no IP restrictions for testing
+	reverse_proxy web-dev:3000 {
+		lb_policy first
+		lb_try_duration 2s
+		health_uri /api/health
+		health_interval 10s
+		health_status 2xx
+	}
 }

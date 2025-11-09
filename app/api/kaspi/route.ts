@@ -1,6 +1,6 @@
 import { RESPONSE_CODES } from '@/entities/kaspi/constants'
 import { buildResponse, parseKaspiDate } from '@/entities/kaspi/helpers'
-import { createClient } from '@/lib/supabase/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createClient()
+    const supabase = createDangerousServerClient()
 
     // Get order with all necessary information
     const { data: order, error: orderError } = await supabase
@@ -52,7 +52,8 @@ export async function GET(request: Request) {
     }
 
     // Get the product price for validation
-    const productPrice = order.machine_products?.products?.price
+    const machineProduct = order.machine_products
+    const productPrice = machineProduct?.products?.price
     const formattedSum = productPrice ? productPrice.toFixed(2) : '0.00'
 
     // Handle CHECK command
@@ -162,14 +163,14 @@ export async function GET(request: Request) {
       }
 
       // Update machine product stock if available
-      if (order.machine_products && order.machine_products.current_stock > 0) {
+      if (machineProduct && machineProduct.current_stock > 0) {
         const { error: stockError } = await supabase
           .from('machine_products')
           .update({
-            current_stock: order.machine_products.current_stock - 1,
+            current_stock: machineProduct.current_stock - 1,
             last_restocked: new Date().toISOString()
           })
-          .eq('id', order.machine_products.id)
+          .eq('id', machineProduct.id)
 
         if (stockError) {
           // Don't fail the payment if stock update fails, just log it

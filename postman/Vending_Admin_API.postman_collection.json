@@ -1,0 +1,363 @@
+{
+  "info": {
+    "name": "PharmExpress Admin API",
+    "description": "API collection for PharmExpress Vending Machine Administration System - Pharmacy Distribution in Kazakhstan",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "pharmexpress-admin"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@mail.com\",\n  \"password\": \"Qwerty123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate user and get access token for API testing"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.success && response.data) {",
+                  "        pm.collectionVariables.set('access_token', response.data.access_token);",
+                  "        console.log('Access token saved to collection variable');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Sign out current user session"
+          }
+        },
+        {
+          "name": "Confirm Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token_hash\": \"your_token_hash_here\",\n  \"type\": \"email\",\n  \"next\": \"/\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/confirm",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "confirm"]
+            },
+            "description": "Confirm email address with OTP token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Get Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Check API health status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1C Integration",
+      "item": [
+        {
+          "name": "Update Product Stock (1C Sync)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"name\": \"Аспирин\",\n    \"sku\": \"ASP-100\",\n    \"price\": 150,\n    \"stock\": 100,\n    \"unit\": \"таб\",\n    \"category\": \"Лекарства\",\n    \"image\": \"https://example.com/aspirin.jpg\"\n  },\n  {\n    \"name\": \"Парацетамол\",\n    \"sku\": \"PAR-500\",\n    \"price\": 140,\n    \"stock\": 80,\n    \"unit\": \"таб\",\n    \"category\": \"Лекарства\",\n    \"image\": \"https://example.com/paracetamol.jpg\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/1c/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "1c", "products"]
+            },
+            "description": "Update product stock from 1C system. Creates new products or updates existing ones based on SKU."
+          }
+        },
+        {
+          "name": "Get Sales Data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/1c/orders?start_date=2025-11-01T00:00:00Z&end_date=2025-11-07T23:59:59Z",
+              "host": ["{{base_url}}"],
+              "path": ["api", "1c", "orders"],
+              "query": [
+                {
+                  "key": "start_date",
+                  "value": "2025-11-01T00:00:00Z",
+                  "description": "Start date in ISO format (UTC)"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2025-11-07T23:59:59Z",
+                  "description": "End date in ISO format (UTC)"
+                }
+              ]
+            },
+            "description": "Get sales data for specified period. Returns only paid orders with Kazakhstan timezone conversion."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vending Machines (RLS Bypass)",
+      "item": [
+        {
+          "name": "Get Machine Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines"]
+            },
+            "description": "Get vending machine information (bypasses RLS, uses serial number auth)"
+          }
+        },
+        {
+          "name": "Get Machine Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "products"]
+            },
+            "description": "Get products loaded in vending machine (bypasses RLS)"
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slot_index\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "orders"]
+            },
+            "description": "Create a new order from vending machine (bypasses RLS, updates stock)"
+          }
+        },
+        {
+          "name": "Get Order Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/orders/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "orders", "1"]
+            },
+            "description": "Get order details for vending machine (bypasses RLS)"
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "x-serial-number",
+                "value": "VM001",
+                "description": "Vending machine serial number for authentication"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/vending-machines/orders/1/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "vending-machines", "orders", "1", "cancel"]
+            },
+            "description": "Cancel an order from vending machine (bypasses RLS)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Kaspi Payment Integration",
+      "item": [
+        {
+          "name": "Check Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kaspi?txn_id=12345&account=1&command=check",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kaspi"],
+              "query": [
+                {
+                  "key": "txn_id",
+                  "value": "12345",
+                  "description": "Transaction ID from Kaspi"
+                },
+                {
+                  "key": "account",
+                  "value": "1",
+                  "description": "Order ID"
+                },
+                {
+                  "key": "command",
+                  "value": "check",
+                  "description": "Command type: check or pay"
+                }
+              ]
+            },
+            "description": "Check payment status for Kaspi integration"
+          }
+        },
+        {
+          "name": "Process Payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/kaspi?txn_id=12345&account=1&command=pay&sum=150.00&txn_date=20251107_143000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "kaspi"],
+              "query": [
+                {
+                  "key": "txn_id",
+                  "value": "12345",
+                  "description": "Transaction ID from Kaspi"
+                },
+                {
+                  "key": "account",
+                  "value": "1",
+                  "description": "Order ID"
+                },
+                {
+                  "key": "command",
+                  "value": "pay",
+                  "description": "Command type: pay"
+                },
+                {
+                  "key": "sum",
+                  "value": "150.00",
+                  "description": "Payment amount"
+                },
+                {
+                  "key": "txn_date",
+                  "value": "20251107_143000",
+                  "description": "Transaction date in Kaspi format"
+                }
+              ]
+            },
+            "description": "Process payment through Kaspi integration"
+          }
+        }
+      ]
+    }
+  ]
+}

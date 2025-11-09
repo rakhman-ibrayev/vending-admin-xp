@@ -1,28 +1,21 @@
-import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
+import { withMachineAuth } from '@/lib/supabase/machine-decorator'
+import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
 import type { Tables } from '@/lib/supabase/database.types'
 
-export async function GET(
-  _: Request,
-  { params }: { params: { serial_number: string } }
-): RouteResponse<Tables<'vending_machines'>> {
-  try {
-    const supabase = await createClient()
-    const serial_number = (await params).serial_number
+type VendingMachine = Tables<'vending_machines'>
 
-    if (!serial_number) {
-      return NextResponse.json(
-        { success: false, message: 'Serial number is required' },
-        { status: 400 }
-      )
-    }
+async function getMachineInfo(machine: Machine): RouteResponse<VendingMachine> {
+  try {
+    const supabase = createDangerousServerClient()
 
     // Get all machine data - simple and clean
-    const { data: machine, error } = await supabase
+    const { data: machineData, error } = await supabase
       .from('vending_machines')
       .select('*')
-      .eq('serial_number', serial_number)
+      .eq('id', machine.id)
       .single()
 
     if (error) {
@@ -37,7 +30,7 @@ export async function GET(
     const { error: updateError } = await supabase
       .from('vending_machines')
       .update({ last_seen: new Date().toISOString() })
-      .eq('serial_number', serial_number)
+      .eq('id', machine.id)
 
     if (updateError) {
       console.error('Error updating last_seen timestamp:', updateError)
@@ -46,7 +39,7 @@ export async function GET(
     }
 
     // Return all machine data - let the vending machine use what it needs
-    return NextResponse.json({ success: true, data: machine })
+    return NextResponse.json({ success: true, data: machineData })
   } catch (error) {
     console.error('Unexpected error fetching machine:', error)
     return NextResponse.json(
@@ -55,3 +48,5 @@ export async function GET(
     )
   }
 }
+
+export const GET = withMachineAuth(getMachineInfo)

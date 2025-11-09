@@ -39,7 +39,8 @@ ENV NEXT_PUBLIC_PHARMEXPRESS_COMPANY_BIN=$NEXT_PUBLIC_PHARMEXPRESS_COMPANY_BIN
 ENV NEXT_PUBLIC_VENDING_MACHINE_HEARTBEAT_INTERVAL_MINS=$NEXT_PUBLIC_VENDING_MACHINE_HEARTBEAT_INTERVAL_MINS
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN \
+# Build with secret mount for sensitive data
+RUN --mount=type=secret,id=supabase_service_role_key,env=SUPABASE_SERVICE_ROLE_KEY \
   if [ -f yarn.lock ]; then yarn run build; \
   elif [ -f package-lock.json ]; then npm run build; \
   elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
