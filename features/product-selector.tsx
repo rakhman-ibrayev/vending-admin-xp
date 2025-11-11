@@ -16,13 +16,15 @@ interface ProductSelectorProps {
   onValueChange: (value: Product) => void
   onCancelClick?: () => void
   className?: string
+  modal?: boolean
 }
 
 function ProductSelector({
   value,
   onValueChange,
   onCancelClick,
-  className
+  className,
+  modal
 }: ProductSelectorProps) {
   const productsQuery = useProductsList({ minStock: 1 })
 
@@ -54,6 +56,7 @@ function ProductSelector({
         onChange={newValue => onValueChange(JSON.parse(newValue))}
         placeholder="Выберите товар"
         className="flex-1"
+        modal={modal}
       />
 
       {onCancelClick && (

@@ -33,6 +33,7 @@ interface ComboboxProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   className?: string
+  modal?: boolean
 }
 
 export function Combobox({
@@ -44,7 +45,8 @@ export function Combobox({
   disabled,
   open: controlledOpen,
   onOpenChange,
-  className
+  className,
+  modal
 }: ComboboxProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
   const open = controlledOpen ?? uncontrolledOpen
@@ -57,7 +59,7 @@ export function Combobox({
   const selectedOption = options.find(opt => opt.value === value)
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpenChange} modal={modal}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"

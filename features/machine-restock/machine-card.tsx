@@ -73,6 +73,7 @@ const MachineCard = memo(
                   }}
                   onCancelClick={() => setIsEditing(false)}
                   className="flex-1 max-w-none"
+                  modal
                 />
               )}
 

@@ -1,23 +1,17 @@
-## 🎟️ Linear Ticket
+## Linear Ticket
 <!-- Required: Paste the related Linear issue link -->
 https://linear.app/pharmexpress/issue/
 
----
-
-## 🧠 Summary
+## Summary
 <!-- High-level summary of what this PR does and why it matters. Keep it short. -->
 
----
-
-## 🧩 Changes
+## Changes
 <!-- Bullet out the key technical or UX changes introduced by this PR. -->
 
 - 
 - 
 
----
-
-## ✅ How to Test
+## How to Test
 <!-- Exact steps for QA/reviewers to validate this change locally or in dev. -->
 
 1. 
@@ -25,14 +19,10 @@ https://linear.app/pharmexpress/issue/
 
 **Expected Result:**
 
----
-
-## 🧪 Screenshots / Recordings (if applicable)
+## Screenshots / Recordings (if applicable)
 <!-- Attach screenshots, gifs, or short loom recordings to visually show the impact. -->
 
----
-
-## ⚙️ Technical Notes
+## Technical Notes
 <!-- Mention anything relevant for devs: migrations, env vars, refactors, dependencies, etc. -->
 
 - [ ] New environment variables required
@@ -40,9 +30,7 @@ https://linear.app/pharmexpress/issue/
 - [ ] New dependency added
 - [ ] Breaking change
 
----
-
-## 🧠 Review Guidelines
+## Review Guidelines
 <!-- Optional checklist for maintainers or reviewers -->
 
 - [ ] Code follows project conventions
