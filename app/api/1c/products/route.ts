@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { NextResponse } from 'next/server'
 import type { RouteResponse } from '@/lib/types'
 
@@ -69,7 +69,7 @@ export async function POST(request: Request): RouteResponse<ProductResponse[]> {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = createDangerousServerClient()
 
     const { data: upsertedProducts } = await supabase
       .from('products')

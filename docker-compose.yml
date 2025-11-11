@@ -6,6 +6,8 @@ services:
       - "3000:3000"
     restart: unless-stopped
     networks: [ webnet ]
+    environment:
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 
   web-prod-b:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:prod-latest
@@ -14,6 +16,8 @@ services:
       - "3002:3000"
     restart: unless-stopped
     networks: [ webnet ]
+    environment:
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 
   web-dev-a:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:dev-latest
@@ -22,6 +26,8 @@ services:
       - "3001:3000"
     restart: unless-stopped
     networks: [ webnet ]
+    environment:
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 
   web-dev-b:
     image: ${REGISTRY:-ghcr.io}/${IMAGE_NAME}:dev-latest
@@ -30,9 +36,11 @@ services:
       - "3003:3000"
     restart: unless-stopped
     networks: [ webnet ]
+    environment:
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
 
   caddy:
-    image: caddy:latest
+    image: caddy:2.10
     container_name: caddy
     restart: unless-stopped
     ports:

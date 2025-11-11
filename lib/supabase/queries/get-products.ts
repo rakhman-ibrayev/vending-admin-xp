@@ -4,11 +4,12 @@ export interface ProductsFilterParams {
   category?: string
   minPrice?: number
   maxPrice?: number
-  search?: string
+  minStock?: number
+  maxStock?: number
 }
 
 export interface ProductsSortParams {
-  field?: 'name' | 'price' | 'created_at' | 'category'
+  field?: 'price' | 'created_at' | 'category' | 'stock'
   direction?: 'asc' | 'desc'
 }
 
@@ -32,6 +33,7 @@ export const getProducts = async (
   let query = supabase
     .from('products')
     .select('*', { count: pagination ? 'exact' : undefined })
+    .gt('price', 0)
 
   // Apply optional filters
   if (filters?.category) {
@@ -46,8 +48,12 @@ export const getProducts = async (
     query = query.lte('price', filters.maxPrice)
   }
 
-  if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+  if (filters?.minStock !== undefined) {
+    query = query.gte('stock', filters.minStock)
+  }
+
+  if (filters?.maxStock !== undefined) {
+    query = query.lte('stock', filters.maxStock)
   }
 
   // Apply sorting

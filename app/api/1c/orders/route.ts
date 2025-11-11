@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { NextResponse } from 'next/server'
 import type { RouteResponse } from '@/lib/types'
 import { convertUTCToKzDate } from '@/lib/utils'
@@ -62,7 +62,7 @@ export async function GET(request: Request): RouteResponse<SaleResponse[]> {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = createDangerousServerClient()
     const { data } = await supabase
       .from('orders')
       .select(

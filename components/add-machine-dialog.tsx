@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -87,6 +88,20 @@ export function AddMachineDialog({
     validationSchema,
     onSubmit
   })
+
+  useEffect(() => {
+    if (open && !defaultValues?.latitude && !defaultValues?.longitude) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          formik.setFieldValue('latitude', position.coords.latitude)
+          formik.setFieldValue('longitude', position.coords.longitude)
+        },
+        error => {
+          console.error('Error getting location:', error)
+        }
+      )
+    }
+  }, [open])
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

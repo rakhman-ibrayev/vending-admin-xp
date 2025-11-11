@@ -1,17 +1,25 @@
-import { AuthRestrict } from '@/components/auth-restrict'
+'use server'
+
 import { ReactQueryClientProvider } from '@/components/react-query-client-provider'
 import { SidebarLayout } from '@/components/sidebar-layout'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.getUser()
+
+  if (error || !data?.user) redirect('/login')
+
   return (
     <ReactQueryClientProvider>
-      <AuthRestrict>
-        <SidebarLayout>{children}</SidebarLayout>
-      </AuthRestrict>
+      <SidebarLayout user={{ email: data.user.email ?? '' }}>
+        {children}
+      </SidebarLayout>
     </ReactQueryClientProvider>
   )
 }
