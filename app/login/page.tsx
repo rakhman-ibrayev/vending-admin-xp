@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { Suspense, useActionState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,7 @@ const initialState = {
   error: null
 }
 
-export default function LoginPage() {
+function Login() {
   const [state, formAction, isPending] = useActionState(login, initialState)
   const searchParams = useSearchParams()
   const redirect = searchParams.get(REDIRECT_PARAM) || '/'
@@ -76,5 +76,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <Login />
+    </Suspense>
   )
 }
