@@ -237,15 +237,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_order_with_stock_update: {
-        Args: {
-          p_machine_command: string
-          p_machine_id: number
-          p_machine_product_id: number
-          p_slot_index: number
-        }
-        Returns: Json
-      }
+      [_ in never]: never
     }
     Enums: {
       machine_status: "online" | "offline"
