@@ -192,3 +192,6 @@ export const getLast30DaysRange = () => ({
   startDate: dayjs().utc().subtract(30, 'day').format(),
   endDate: dayjs().utc().format()
 })
+
+export const formatPrice = (price: string | number) =>
+  `${price.toLocaleString()} ₸`

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
 import { useProductsList } from '@/entities/products/use-products-list'
+import { formatPrice } from '@/lib/supabase/helpers'
 import { cn } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { useMemo } from 'react'
@@ -41,7 +42,9 @@ function ProductSelector({
           label: (
             <span>
               {product.name}{' '}
-              <span className="text-muted-foreground">- ₸{product.price}</span>
+              <span className="text-muted-foreground">
+                - {formatPrice(product.price)}
+              </span>
             </span>
           )
         })) || [],

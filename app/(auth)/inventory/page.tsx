@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { useProductsList } from '@/entities/products/use-products-list'
 import { ProductStatusBadge } from '@/components/product-status-badge'
+import { formatPrice } from '@/lib/supabase/helpers'
 
 export default function InventoryPage() {
   const productsQuery = useProductsList()
@@ -170,7 +171,7 @@ export default function InventoryPage() {
 
             <CardContent>
               <div className="text-2xl font-bold">
-                ₸{totalValue.toLocaleString()}
+                {formatPrice(totalValue)}
               </div>
 
               <p className="text-xs text-muted-foreground">общая стоимость</p>
@@ -279,7 +280,7 @@ export default function InventoryPage() {
                         <div className="font-medium">{product.name}</div>
                       </TableCell>
 
-                      <TableCell>₸{product.price}</TableCell>
+                      <TableCell>{formatPrice(product.price)}</TableCell>
 
                       <TableCell>
                         <span
