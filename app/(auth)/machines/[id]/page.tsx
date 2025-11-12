@@ -28,7 +28,7 @@ import { MachineStatus } from '@/components/machine-status'
 import { OrderStatus } from '@/components/order-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
-import { formatDate, getTodayRange } from '@/lib/supabase/helpers'
+import { formatDate, formatPrice, getTodayRange } from '@/lib/supabase/helpers'
 import { EditMachine } from '@/features/edit-machine'
 import { MachineRestock } from '@/features/machine-restock'
 
@@ -62,10 +62,12 @@ export default function MachineDetailPage() {
 
   const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
 
-  const revenue = orders.reduce(
-    (sum, order) => sum + (order.machine_products?.products?.price || 0),
-    0
-  )
+  const revenue = orders
+    .filter(order => order.status === 'paid')
+    .reduce(
+      (sum, order) => sum + (order.machine_products?.products?.price || 0),
+      0
+    )
 
   return (
     <main className="space-y-6">
@@ -181,7 +183,7 @@ export default function MachineDetailPage() {
                   </div>
 
                   <div className="text-2xl font-bold">
-                    ₸{revenue.toLocaleString()}
+                    {formatPrice(revenue)}
                   </div>
                 </div>
               </CardContent>
@@ -199,7 +201,15 @@ export default function MachineDetailPage() {
                 {ordersQuery.data.orders.map(order => (
                   <Fragment key={order.id}>
                     <div className="flex flex-col justify-between gap-2">
-                      <span>{order.machine_products?.products?.name}</span>
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{order.machine_products?.products?.name}</span>
+
+                        <span className="font-bold">
+                          {formatPrice(
+                            order.machine_products?.products?.price || ''
+                          )}
+                        </span>
+                      </div>
 
                       <div className="flex items-center justify-between gap-3">
                         <OrderStatus status={order.status} />

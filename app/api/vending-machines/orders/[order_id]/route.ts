@@ -3,6 +3,7 @@ import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { withMachineAuth } from '@/lib/supabase/machine-decorator'
 import type { Machine } from '@/lib/supabase/machine-auth'
 import type { RouteResponse } from '@/lib/types'
+import { getKaspiQrLink } from '@/entities/kaspi/helpers'
 
 interface OrderDetailsResponse {
   id: number
@@ -12,6 +13,7 @@ interface OrderDetailsResponse {
   product_name: string | null
   product_price: number | null
   machine_command: string | null
+  qr_link: string
 }
 
 async function getOrderDetails(
@@ -69,7 +71,8 @@ async function getOrderDetails(
       slot_index: order.machine_products?.slot_index ?? null,
       product_name: order.machine_products?.products?.name ?? null,
       product_price: order.machine_products?.products?.price ?? null,
-      machine_command: order.machine_command
+      machine_command: order.machine_command,
+      qr_link: getKaspiQrLink(order.id)
     }
 
     return NextResponse.json({ success: true, data: response })

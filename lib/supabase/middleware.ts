@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { REDIRECT_PARAM } from '@/lib/constants'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -48,6 +49,10 @@ export async function updateSession(request: NextRequest) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    url.searchParams.set(
+      REDIRECT_PARAM,
+      request.nextUrl.pathname + request.nextUrl.search
+    )
     return NextResponse.redirect(url)
   }
 

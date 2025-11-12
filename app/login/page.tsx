@@ -1,12 +1,14 @@
 'use client'
 
 import { useActionState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { login } from './actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
+import { REDIRECT_PARAM } from '@/lib/constants'
 
 const initialState = {
   error: null
@@ -14,6 +16,8 @@ const initialState = {
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(login, initialState)
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get(REDIRECT_PARAM) || '/'
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40">
@@ -24,6 +28,8 @@ export default function LoginPage() {
 
         <CardContent className="px-4">
           <form action={formAction} className="space-y-6">
+            <input type="hidden" name={REDIRECT_PARAM} value={redirect} />
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

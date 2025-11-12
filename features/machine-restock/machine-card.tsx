@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { ProductSelector } from '@/features/product-selector'
 import { PlusCircle, Trash2 } from 'lucide-react'
 import { memo, useState } from 'react'
+import { formatPrice } from '@/lib/supabase/helpers'
 
 interface MachineCardProps {
   index: number
@@ -156,7 +157,9 @@ const MachineCard = memo(
                     Заполнить
                   </Button>
 
-                  <span className="ml-auto font-medium">₸{productPrice}</span>
+                  <span className="ml-auto font-medium">
+                    {formatPrice(productPrice)}
+                  </span>
                 </div>
               </>
             )}

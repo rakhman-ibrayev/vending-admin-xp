@@ -33,3 +33,7 @@ export function parseKaspiDate(dateStr: string): Date {
 
   return convertKzDateToUTC(kaspiDate)
 }
+
+export function getKaspiQrLink(orderId: number): string {
+  return `https://kaspi.kz/pay/PharmExpress?17533=${orderId}`
+}
