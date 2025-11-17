@@ -18,21 +18,21 @@ async function createOrder(
     const { slot_index } = body
 
     // Validate input
-    if (slot_index === undefined || slot_index === null) {
+    if (
+      slot_index === undefined ||
+      slot_index === null ||
+      typeof slot_index !== 'number' ||
+      slot_index < 1 ||
+      slot_index > machine.num_slots
+    ) {
       return NextResponse.json(
-        { success: false, message: 'slot_index is required' },
+        {
+          success: false,
+          message: `slot_index must be a positive number between 1 and ${machine.num_slots}`
+        },
         { status: 400 }
       )
     }
-
-    if (typeof slot_index !== 'number' || slot_index < 1) {
-      return NextResponse.json(
-        { success: false, message: 'slot_index must be a positive number' },
-        { status: 400 }
-      )
-    }
-
-    const supabase = createDangerousServerClient()
 
     // Check if machine is online
     if (machine.status !== 'online') {
@@ -42,16 +42,7 @@ async function createOrder(
       )
     }
 
-    // Validate slot index
-    if (slot_index > machine.num_slots) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: `Slot index must be between 1 and ${machine.num_slots}`
-        },
-        { status: 400 }
-      )
-    }
+    const supabase = createDangerousServerClient()
 
     // Use machine's id and slot_index to retrieve the machine_product
     const { data: machineProduct, error: productError } = await supabase
@@ -82,51 +73,37 @@ async function createOrder(
       )
     }
 
-    // Create order and update stock atomically using a database function
-    const { data: result, error: transactionError } = await supabase.rpc(
-      'create_order_with_stock_update',
-      {
-        p_machine_id: machine.id,
-        p_machine_product_id: machineProduct.id,
-        p_machine_command: vendProduct(slot_index - 1), // Convert to 0-based index
-        p_slot_index: slot_index
-      }
-    )
-
-    if (transactionError) {
-      console.error('Error in transaction:', transactionError)
+    // Check if product is in stock
+    if (machineProduct.current_stock <= 0) {
+      console.error('Product out of stock')
       return NextResponse.json(
-        { success: false, message: 'Failed to process order' },
-        { status: 500 }
-      )
-    }
-
-    if (!result) {
-      return NextResponse.json(
-        { success: false, message: 'No response from database' },
-        { status: 500 }
-      )
-    }
-
-    const response = result as { error?: string; order_id?: number }
-
-    if (response.error) {
-      console.error('Transaction failed:', response.error)
-      return NextResponse.json(
-        { success: false, message: response.error },
+        { success: false, message: 'Product out of stock' },
         { status: 400 }
       )
     }
 
-    if (!response.order_id) {
+    // Create order directly
+    const { data: order, error: insertError } = await supabase
+      .from('orders')
+      .insert({
+        machine_id: machine.id,
+        machine_product_id: machineProduct.id,
+        machine_command: vendProduct(slot_index - 1),
+        status: 'created'
+      })
+      .select('id')
+      .single()
+
+    if (insertError) {
+      console.error('Error creating order:', insertError)
       return NextResponse.json(
-        { success: false, message: 'No order ID returned' },
+        { success: false, message: 'Failed to create order' },
         { status: 500 }
       )
     }
 
     return NextResponse.json(
-      { success: true, data: { id: response.order_id } },
+      { success: true, data: { id: order.id } },
       { status: 201 }
     )
   } catch (error) {

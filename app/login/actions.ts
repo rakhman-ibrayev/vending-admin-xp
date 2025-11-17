@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import type { AuthError } from '@supabase/supabase-js'
+import { REDIRECT_PARAM } from '@/lib/constants'
 
 export async function login(
   _: any,
@@ -23,7 +24,8 @@ export async function login(
 
   if (!error) {
     revalidatePath('/', 'layout')
-    redirect('/')
+    const redirectTo = (formData.get(REDIRECT_PARAM) as string) || '/'
+    redirect(redirectTo)
   }
 
   return { error }
