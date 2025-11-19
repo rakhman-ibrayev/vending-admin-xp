@@ -136,6 +136,7 @@ export default function MachineDetailPage() {
                 <MachineRestock
                   machineId={machine.id}
                   numSlots={machine.num_slots}
+                  machineSerialNumber={machine.serial_number}
                 />
               </CardFooter>
             </Card>

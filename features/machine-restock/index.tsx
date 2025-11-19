@@ -6,12 +6,17 @@ import { useRestockVendingMachine } from '@/entities/vending-machines/use-restoc
 interface MachineRestockProps {
   machineId: number
   numSlots: number
+  machineSerialNumber: string
 }
 
-const MachineRestock = ({ machineId, numSlots }: MachineRestockProps) => {
+const MachineRestock = ({
+  machineId,
+  numSlots,
+  machineSerialNumber
+}: MachineRestockProps) => {
   const [restockDialogOpen, setRestockDialogOpen] = useState(false)
 
-  const restockMutation = useRestockVendingMachine()
+  const restockMutation = useRestockVendingMachine(machineSerialNumber)
 
   return (
     <>
