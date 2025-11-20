@@ -94,119 +94,112 @@ const recentSales = [
 
 export default function DashboardPage() {
   return (
-    <main>
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
-            Дашборд
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Обзор работы вендинговых аппаратов
-          </p>
-        </div>
+    <main className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
+          Дашборд
+        </h1>
+        <p className="text-muted-foreground mt-2">
+          Обзор работы вендинговых аппаратов
+        </p>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map(stat => (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-
-                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.change}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Recent Sales */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Последние продажи
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map(stat => (
+          <Card key={stat.title}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {stat.title}
               </CardTitle>
+
+              <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </CardHeader>
 
             <CardContent>
-              <div className="space-y-4">
-                {recentSales.map((sale, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{sale.product}</p>
-
-                      <p className="text-xs text-muted-foreground">
-                        {sale.machine}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{sale.amount}</p>
-
-                      <p className="text-xs text-muted-foreground">
-                        {sale.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.change}</p>
             </CardContent>
           </Card>
+        ))}
+      </div>
 
-          {/* Alerts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                Уведомления
-              </CardTitle>
-            </CardHeader>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Recent Sales */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Последние продажи
+            </CardTitle>
+          </CardHeader>
 
-            <CardContent>
-              <div className="space-y-4">
-                {alerts.map(alert => (
-                  <div key={alert.id} className="flex items-start gap-3">
-                    <Badge
-                      variant={
-                        alert.type === 'error'
-                          ? 'destructive'
-                          : alert.type === 'warning'
-                            ? 'secondary'
-                            : 'default'
-                      }
-                      className="mt-0.5"
-                    >
-                      {alert.type === 'error'
-                        ? 'Ошибка'
+          <CardContent>
+            <div className="space-y-4">
+              {recentSales.map((sale, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{sale.product}</p>
+
+                    <p className="text-xs text-muted-foreground">
+                      {sale.machine}
+                    </p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{sale.amount}</p>
+
+                    <p className="text-xs text-muted-foreground">{sale.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Alerts */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Уведомления
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <div className="space-y-4">
+              {alerts.map(alert => (
+                <div key={alert.id} className="flex items-start gap-3">
+                  <Badge
+                    variant={
+                      alert.type === 'error'
+                        ? 'destructive'
                         : alert.type === 'warning'
-                          ? 'Внимание'
-                          : 'Инфо'}
-                    </Badge>
+                          ? 'secondary'
+                          : 'default'
+                    }
+                    className="mt-0.5"
+                  >
+                    {alert.type === 'error'
+                      ? 'Ошибка'
+                      : alert.type === 'warning'
+                        ? 'Внимание'
+                        : 'Инфо'}
+                  </Badge>
 
-                    <div className="flex-1 space-y-1">
-                      <p className="text-sm">{alert.message}</p>
+                  <div className="flex-1 space-y-1">
+                    <p className="text-sm">{alert.message}</p>
 
-                      <p className="text-xs text-muted-foreground">
-                        {alert.time}
-                      </p>
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {alert.time}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </main>
   )
