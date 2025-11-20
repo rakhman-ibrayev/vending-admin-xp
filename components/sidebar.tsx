@@ -5,17 +5,7 @@ import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Coffee,
-  BarChart3,
-  Package,
-  Users,
-  Settings,
-  Menu,
-  X,
-  Home,
-  LogOut
-} from 'lucide-react'
+import { Coffee, BarChart3, Package, Menu, X, Home, LogOut } from 'lucide-react'
 import { Card } from './ui/card'
 import { createClient } from '@/lib/supabase/client'
 
@@ -39,16 +29,6 @@ const navigation = [
     name: 'Товары',
     href: '/inventory',
     icon: Package
-  },
-  {
-    name: 'Пользователи',
-    href: '/users',
-    icon: Users
-  },
-  {
-    name: 'Настройки',
-    href: '/settings',
-    icon: Settings
   }
 ]
 
