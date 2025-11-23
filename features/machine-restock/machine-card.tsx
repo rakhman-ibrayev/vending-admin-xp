@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { ProductSelector } from '@/features/product-selector'
 import { PlusCircle, Trash2 } from 'lucide-react'
 import { memo, useState } from 'react'
-import { formatPrice } from '@/lib/supabase/helpers'
+import { formatPrice } from '@/lib/prices/format-price'
 
 interface MachineCardProps {
   index: number

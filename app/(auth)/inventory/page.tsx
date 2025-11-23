@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 import { useProductsList } from '@/entities/products/use-products-list'
 import { ProductStatusBadge } from '@/components/product-status-badge'
-import { formatPrice } from '@/lib/supabase/helpers'
+import { formatPrice } from '@/lib/prices/format-price'
 
 export default function InventoryPage() {
   const productsQuery = useProductsList()

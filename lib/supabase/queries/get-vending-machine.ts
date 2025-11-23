@@ -1,5 +1,6 @@
+import { isOlderThan } from '@/lib/dates/is-older-than'
 import { createClient } from '../client'
-import { formatDate, isOlderThan } from '../helpers'
+import { formatDate } from '@/lib/dates/format-date'
 
 export const getVendingMachine = async (id: number) => {
   const supabase = createClient()
