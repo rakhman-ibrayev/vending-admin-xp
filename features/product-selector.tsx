@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
 import { useProductsList } from '@/entities/products/use-products-list'
-import { formatPrice } from '@/lib/supabase/helpers'
-import { cn } from '@/lib/utils'
+import { formatPrice } from '@/lib/prices/format-price'
+import { cn } from '@/lib/classnames/cn'
 import { X } from 'lucide-react'
 import { useMemo } from 'react'
 

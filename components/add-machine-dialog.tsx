@@ -114,23 +114,24 @@ export function AddMachineDialog({
 
         <FormikProvider value={formik}>
           <form onSubmit={formik.handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="serial_number">Серийный номер *</Label>
-              <Input
-                id="serial_number"
-                name="serial_number"
-                value={formik.values.serial_number}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                placeholder="SN123456"
-                disabled={isEditing}
-              />
-              <ErrorMessage
-                name="serial_number"
-                component="div"
-                className="text-destructive text-xs"
-              />
-            </div>
+            {!isEditing && (
+              <div className="space-y-2">
+                <Label htmlFor="serial_number">Серийный номер *</Label>
+                <Input
+                  id="serial_number"
+                  name="serial_number"
+                  value={formik.values.serial_number}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  placeholder="SN123456"
+                />
+                <ErrorMessage
+                  name="serial_number"
+                  component="div"
+                  className="text-destructive text-xs"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label htmlFor="name">Название аппарата *</Label>

@@ -1,7 +1,9 @@
+import { isOlderThan } from '@/lib/dates/is-older-than'
 import { createClient } from '../client'
-import { formatDate, getActualStatus, getTodayRange } from '../helpers'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
+import { getTodayRange } from '@/lib/dates/get-today-range'
+import { formatDate } from '@/lib/dates/format-date'
 
 dayjs.extend(utc)
 
@@ -66,7 +68,16 @@ export const getVendingMachinesList = async () => {
       name: machine.name,
       location: machine.location,
       description: machine.description,
-      status: getActualStatus(machine.status, machine.last_seen),
+      status:
+        !machine.last_seen ||
+        isOlderThan(
+          machine.last_seen,
+          Number(
+            process.env.NEXT_PUBLIC_VENDING_MACHINE_HEARTBEAT_INTERVAL_MINS
+          )
+        )
+          ? 'offline'
+          : machine.status,
       originalStatus: machine.status,
       temperature: machine.temperature,
       lastSeen: formatDate(machine.last_seen),

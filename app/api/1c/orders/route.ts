@@ -1,7 +1,7 @@
 import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { NextResponse } from 'next/server'
 import type { RouteResponse } from '@/lib/types'
-import { convertUTCToKzDate } from '@/lib/utils'
+import { convertUTCToKzDate } from '@/lib/dates/convert-utc-date-to-kz'
 
 interface SaleResponse {
   sale_id: number
