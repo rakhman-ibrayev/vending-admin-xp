@@ -1,206 +1,238 @@
 'use client'
 
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
-  Coffee,
-  TrendingUp,
-  AlertTriangle,
-  Users,
-  DollarSign,
-  Package
-} from 'lucide-react'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import { Coffee, MapPin, Clock, Plus, Search, Filter } from 'lucide-react'
+import { AddMachineDialog } from '@/components/add-machine-dialog'
+import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useVendingMachinesList } from '@/entities/vending-machines/use-vending-machines-list'
+import { useAddVendingMachine } from '@/entities/vending-machines/use-add-vending-machine'
+import { MachineStatus } from '@/components/machine-status'
+import { ProgressBar } from '@/components/progress-bar'
 
-// Mock data for dashboard
-const stats = [
-  {
-    title: 'Всего аппаратов',
-    value: '24',
-    change: '+2 за месяц',
-    icon: Coffee,
-    color: 'text-blue-600'
+const statusConfig = {
+  online: {
+    label: 'Работает'
   },
-  {
-    title: 'Доход сегодня',
-    value: '₸45,230',
-    change: '+12% к вчера',
-    icon: DollarSign,
-    color: 'text-green-600'
-  },
-  {
-    title: 'Активные пользователи',
-    value: '1,247',
-    change: '+5% за неделю',
-    icon: Users,
-    color: 'text-purple-600'
-  },
-  {
-    title: 'Товаров продано',
-    value: '892',
-    change: '+18% к вчера',
-    icon: Package,
-    color: 'text-orange-600'
+  offline: {
+    label: 'Не в сети'
   }
-]
+}
 
-const alerts = [
-  {
-    id: 1,
-    type: 'warning',
-    message: 'Аппарат VM-003 не отвечает уже 3 часа',
-    time: '10 мин назад'
-  },
-  {
-    id: 2,
-    type: 'info',
-    message: 'Пополнение товаров в VM-001 завершено',
-    time: '1 час назад'
-  },
-  {
-    id: 3,
-    type: 'error',
-    message: 'Низкий уровень товаров в VM-005 (12%)',
-    time: '2 часа назад'
+export default function MachinesPage() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+
+  const vendingMachinesQuery = useVendingMachinesList()
+  const addVendingMachineMutation = useAddVendingMachine()
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const closeAddDialog = () => {
+    if (hasPrefill) {
+      router.replace('/')
+    } else {
+      setIsAddDialogOpen(false)
+    }
   }
-]
 
-const recentSales = [
-  {
-    machine: 'VM-001',
-    product: 'Кока-Кола 0.5л',
-    amount: '₸85',
-    time: '2 мин назад'
-  },
-  {
-    machine: 'VM-004',
-    product: 'Сникерс',
-    amount: '₸120',
-    time: '5 мин назад'
-  },
-  {
-    machine: 'VM-002',
-    product: 'Вода Бон Аква',
-    amount: '₸45',
-    time: '8 мин назад'
-  },
-  { machine: 'VM-001', product: 'Твикс', amount: '₸110', time: '12 мин назад' },
-  {
-    machine: 'VM-005',
-    product: 'Пепси 0.33л',
-    amount: '₸75',
-    time: '15 мин назад'
+  const addDialogValues = {
+    serial_number: searchParams.get('serial_number') || '',
+    latitude: searchParams.get('latitude')
+      ? parseFloat(searchParams.get('latitude')!)
+      : undefined,
+    longitude: searchParams.get('longitude')
+      ? parseFloat(searchParams.get('longitude')!)
+      : undefined
   }
-]
+  const hasPrefill = Object.values(addDialogValues).some(val => Boolean(val))
 
-export default function DashboardPage() {
+  const filteredMachines =
+    vendingMachinesQuery.data?.filter(machine => {
+      const matchesSearch =
+        machine.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        machine.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        machine.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus =
+        statusFilter === 'all' || machine.status === statusFilter
+
+      return matchesSearch && matchesStatus
+    }) || []
+
+  if (vendingMachinesQuery.isLoading) {
+    return null
+  }
+
   return (
-    <main className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
-          Дашборд
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Обзор работы вендинговых аппаратов
-        </p>
-      </div>
+    <>
+      <main className="space-y-6">
+        {/* Header */}
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground font-[family-name:var(--font-work-sans)]">
+                Управление аппаратами
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Мониторинг и управление всеми вендинговыми аппаратами
+              </p>
+            </div>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Добавить аппарат
+            </Button>
+          </div>
+        </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map(stat => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
+        {/* Filters and Search */}
+        <Card>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Поиск по названию, локации или ID..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-transparent">
+                    <Filter className="h-4 w-4" />
+                    Статус:{' '}
+                    {statusFilter === 'all'
+                      ? 'Все'
+                      : statusConfig[statusFilter as keyof typeof statusConfig]
+                          ?.label}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => setStatusFilter('all')}>
+                    Все статусы
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('online')}>
+                    Работает
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setStatusFilter('maintenance')}
+                  >
+                    Обслуживание
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setStatusFilter('offline')}>
+                    Не в сети
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardContent>
+        </Card>
 
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
+        {/* Machines Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {filteredMachines.map(machine => (
+            <Link href={`/machines/${machine.id}`} key={machine.id}>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg font-[family-name:var(--font-work-sans)]">
+                        {machine.name}
+                      </CardTitle>
+                      <div className="flex gap-2 flex-col">
+                        <MachineStatus status={machine.status} />
 
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.change}</p>
+                        <span className="text-sm text-muted-foreground">
+                          {machine.serialNumber}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Location */}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span className="truncate">{machine.location}</span>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">Доход сегодня</div>
+                      <div className="font-semibold">
+                        ₸{machine.todayRevenue.toLocaleString()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Заполненность</div>
+                      <div className="font-semibold">
+                        {machine.fillPercentage}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Fill Level Bar */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>
+                        Товары: {machine.currentStock}/{machine.numSlots}
+                      </span>
+
+                      {machine.temperature && (
+                        <span>Температура: {machine.temperature}°C</span>
+                      )}
+                    </div>
+                    <ProgressBar fillPercentage={machine.fillPercentage} />
+                  </div>
+
+                  {/* Last Sync */}
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t">
+                    <Clock className="h-3 w-3" />
+                    Последняя синхронизация: {machine.lastSeen}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        {filteredMachines.length === 0 && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Coffee className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                Аппараты не найдены
+              </h3>
+              <p className="text-muted-foreground">
+                Попробуйте изменить параметры поиска или добавить новый аппарат
+              </p>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        )}
+      </main>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Sales */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Последние продажи
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="space-y-4">
-              {recentSales.map((sale, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{sale.product}</p>
-
-                    <p className="text-xs text-muted-foreground">
-                      {sale.machine}
-                    </p>
-                  </div>
-
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{sale.amount}</p>
-
-                    <p className="text-xs text-muted-foreground">{sale.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Alerts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5" />
-              Уведомления
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent>
-            <div className="space-y-4">
-              {alerts.map(alert => (
-                <div key={alert.id} className="flex items-start gap-3">
-                  <Badge
-                    variant={
-                      alert.type === 'error'
-                        ? 'destructive'
-                        : alert.type === 'warning'
-                          ? 'secondary'
-                          : 'default'
-                    }
-                    className="mt-0.5"
-                  >
-                    {alert.type === 'error'
-                      ? 'Ошибка'
-                      : alert.type === 'warning'
-                        ? 'Внимание'
-                        : 'Инфо'}
-                  </Badge>
-
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm">{alert.message}</p>
-
-                    <p className="text-xs text-muted-foreground">
-                      {alert.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </main>
+      <AddMachineDialog
+        open={isAddDialogOpen || hasPrefill}
+        onClose={closeAddDialog}
+        defaultValues={addDialogValues}
+        onSubmit={async values => {
+          await addVendingMachineMutation.mutateAsync(values)
+          closeAddDialog()
+        }}
+      />
+    </>
   )
 }
