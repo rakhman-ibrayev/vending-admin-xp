@@ -1,33 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { cn } from '@/lib/classnames/cn'
 
-const topProducts = [
-  {
-    name: 'Кока-Кола 0.5л',
-    sales: 234,
-    revenue: 20826,
-    change: 12.5,
-    trend: 'up'
-  },
-  { name: 'Сникерс', sales: 189, revenue: 12285, change: 8.3, trend: 'up' },
-  {
-    name: 'Вода Бон Аква',
-    sales: 156,
-    revenue: 7020,
-    change: -2.1,
-    trend: 'down'
-  },
-  { name: 'Чипсы Лейс', sales: 134, revenue: 10050, change: 15.7, trend: 'up' },
-  {
-    name: 'Кофе Нескафе',
-    sales: 98,
-    revenue: 3430,
-    change: -5.2,
-    trend: 'down'
-  }
-]
+interface TopProductsTableProps {
+  data?: Array<{
+    name: string
+    revenue: number
+    sales?: number
+    change?: number | null
+  }>
+}
 
-export function TopProductsTable() {
+export function TopProductsTable({ data }: TopProductsTableProps) {
+  const processedData = (data ?? []).slice(0, 5).map(item => {
+    const change = item.change == null ? null : item.change
+    const trend = change == null ? 'neutral' : change >= 0 ? 'up' : 'down'
+
+    return {
+      name: item.name,
+      sales: item.sales || 0,
+      revenue: item.revenue,
+      change,
+      trend
+    } as const
+  })
   return (
     <Card>
       <CardHeader>
@@ -37,7 +33,7 @@ export function TopProductsTable() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {topProducts.map((product, index) => (
+          {processedData.map((product, index) => (
             <div
               key={product.name}
               className="flex items-center justify-between p-3 border rounded-lg"
@@ -56,17 +52,27 @@ export function TopProductsTable() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
-                {product.trend === 'up' ? (
+                {product.trend === 'neutral' ? null : product.trend === 'up' ? (
                   <TrendingUp className="h-3 w-3 text-green-500" />
                 ) : (
                   <TrendingDown className="h-3 w-3 text-red-500" />
                 )}
-                <span
-                  className={`text-xs font-medium ${product.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {product.change > 0 ? '+' : ''}
-                  {product.change}%
-                </span>
+
+                {product.change == null ? (
+                  <span className="text-muted-foreground text-xs font-medium">
+                    —
+                  </span>
+                ) : (
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      product.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                    )}
+                  >
+                    {product.change > 0 ? '+' : ''}
+                    {product.change}%
+                  </span>
+                )}
               </div>
             </div>
           ))}

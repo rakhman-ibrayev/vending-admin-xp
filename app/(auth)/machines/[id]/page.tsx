@@ -32,6 +32,7 @@ import { MachineRestock } from '@/features/machine-restock'
 import { getTodayRange } from '@/lib/dates/get-today-range'
 import { formatDate } from '@/lib/dates/format-date'
 import { formatPrice } from '@/lib/prices/format-price'
+import { SalesAnalytics } from '@/components/sales-analytics'
 
 export default function MachineDetailPage() {
   const params = useParams()
@@ -222,16 +223,9 @@ export default function MachineDetailPage() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Аналитика продаж</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Здесь будут графики и детальная аналитика по этому аппарату
-              </p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <SalesAnalytics machineId={machine.id} />
+          </div>
         </TabsContent>
 
         <TabsContent value="maintenance">

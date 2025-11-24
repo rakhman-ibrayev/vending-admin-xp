@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,12 +26,46 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react'
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import { useProductsList } from '@/entities/products/use-products-list'
+import { useProductSalesByDay } from '@/entities/analytics/use-product-sales-by-day'
 import { ProductStatusBadge } from '@/components/product-status-badge'
 import { formatPrice } from '@/lib/prices/format-price'
 
 export default function InventoryPage() {
   const productsQuery = useProductsList()
+
+  // Calculate current month date range
+  const currentMonth = useMemo(() => {
+    const now = new Date()
+
+    return {
+      startDate: format(startOfMonth(now), 'yyyy-MM-dd'),
+      endDate: format(endOfMonth(now), 'yyyy-MM-dd')
+    }
+  }, [])
+
+  // Fetch sales data for current month
+  const { data: salesData } = useProductSalesByDay({
+    startDate: currentMonth.startDate,
+    endDate: currentMonth.endDate
+  })
+
+  // Calculate sales per product for current month
+  const productSalesThisMonth = useMemo(() => {
+    if (!salesData?.sales) return new Map<number, number>()
+
+    const salesMap = new Map<number, number>()
+
+    salesData.sales.forEach(sale => {
+      const productId = sale.product_id
+      const numSales = sale.num_sales || 0
+      if (productId) {
+        salesMap.set(productId, (salesMap.get(productId) || 0) + numSales)
+      }
+    })
+    return salesMap
+  }, [salesData])
 
   const products =
     productsQuery.data?.products.map(product => ({
@@ -41,7 +75,7 @@ export default function InventoryPage() {
       price: product.price,
       totalStock: product.stock,
       lowStockThreshold: 20,
-      salesThisMonth: 45
+      salesThisMonth: productSalesThisMonth.get(product.id) || 0
     })) || []
 
   const categories = Array.from(
@@ -189,7 +223,7 @@ export default function InventoryPage() {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent>
+              <DropdownMenuContent className="p-0 w-[var(--radix-popper-anchor-width)]">
                 {categories.map(category => (
                   <DropdownMenuItem
                     key={category}
@@ -214,7 +248,7 @@ export default function InventoryPage() {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent>
+              <DropdownMenuContent className="p-0 w-[var(--radix-popper-anchor-width)]">
                 <DropdownMenuItem onClick={() => setStockFilter('all')}>
                   Все товары
                 </DropdownMenuItem>
@@ -292,7 +326,6 @@ export default function InventoryPage() {
 
                     <TableCell>
                       <div className="flex items-center gap-1 justify-end">
-                        <TrendingUp className="h-3 w-3 text-green-500" />
                         {product.salesThisMonth}
                       </div>
                     </TableCell>
