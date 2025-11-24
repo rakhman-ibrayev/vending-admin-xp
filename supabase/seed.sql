@@ -135,6 +135,98 @@ INSERT INTO public.orders (machine_id, machine_product_id, status, machine_comma
 (2, 5, 'paid', 'VEND_SLOT_04', NOW() - INTERVAL '2 days'),
 (1, 6, 'paid', 'VEND_SLOT_06', NOW() - INTERVAL '3 days');
 
+-- Insert sample product sales by day
+INSERT INTO public.product_sales_by_day (day, machine_id, product_id, num_sales, amount) VALUES
+-- Today's sales
+(DATE(NOW()), 1, 1, 1, 150), -- Aspirin on machine 1
+(DATE(NOW()), 1, 3, 1, 120), -- Vitamin C on machine 1
+(DATE(NOW()), 2, 1, 1, 150), -- Aspirin on machine 2
+(DATE(NOW()), 1, 5, 1, 80),  -- Mineral water on machine 1
+
+-- Yesterday's sales
+(DATE(NOW() - INTERVAL '1 day'), 1, 1, 1, 150), -- Aspirin on machine 1
+(DATE(NOW() - INTERVAL '1 day'), 1, 4, 1, 200), -- Medical bandage on machine 1
+
+-- Two days ago
+(DATE(NOW() - INTERVAL '2 days'), 2, 5, 1, 80),  -- Mineral water on machine 2
+
+-- Three days ago
+(DATE(NOW() - INTERVAL '3 days'), 1, 6, 1, 180), -- Cough syrup on machine 1
+
+-- October 2025 sales
+('2025-10-01', 1, 1, 5, 750), -- Aspirin on machine 1
+('2025-10-01', 1, 5, 10, 800), -- Water on machine 1
+('2025-10-01', 2, 1, 3, 450), -- Aspirin on machine 2
+('2025-10-01', 2, 5, 8, 640), -- Water on machine 2
+('2025-10-01', 3, 1, 2, 300), -- Aspirin on machine 3
+('2025-10-01', 3, 5, 4, 320), -- Water on machine 3
+
+('2025-10-15', 1, 1, 7, 1050), -- Aspirin on machine 1
+('2025-10-15', 1, 2, 4, 560), -- Paracetamol on machine 1
+('2025-10-15', 1, 5, 12, 960), -- Water on machine 1
+('2025-10-15', 2, 1, 5, 750), -- Aspirin on machine 2
+('2025-10-15', 2, 3, 3, 360), -- Vitamin C on machine 2
+('2025-10-15', 2, 5, 9, 720), -- Water on machine 2
+('2025-10-15', 3, 1, 1, 150), -- Aspirin on machine 3
+('2025-10-15', 3, 2, 2, 280), -- Paracetamol on machine 3
+
+('2025-10-30', 1, 1, 6, 900), -- Aspirin on machine 1
+('2025-10-30', 1, 3, 5, 600), -- Vitamin C on machine 1
+('2025-10-30', 1, 5, 15, 1200), -- Water on machine 1
+('2025-10-30', 2, 1, 4, 600), -- Aspirin on machine 2
+('2025-10-30', 2, 4, 2, 400), -- Bandage on machine 2
+('2025-10-30', 2, 5, 11, 880), -- Water on machine 2
+('2025-10-30', 3, 5, 3, 240), -- Water on machine 3
+
+-- September 2025 sales
+('2025-09-01', 1, 1, 4, 600), -- Aspirin on machine 1
+('2025-09-01', 1, 5, 9, 720), -- Water on machine 1
+('2025-09-01', 2, 1, 2, 300), -- Aspirin on machine 2
+('2025-09-01', 2, 5, 7, 560), -- Water on machine 2
+('2025-09-01', 3, 1, 3, 450), -- Aspirin on machine 3
+('2025-09-01', 3, 5, 5, 400), -- Water on machine 3
+
+('2025-09-15', 1, 1, 8, 1200), -- Aspirin on machine 1
+('2025-09-15', 1, 2, 3, 420), -- Paracetamol on machine 1
+('2025-09-15', 1, 5, 14, 1120), -- Water on machine 1
+('2025-09-15', 2, 1, 6, 900), -- Aspirin on machine 2
+('2025-09-15', 2, 3, 4, 480), -- Vitamin C on machine 2
+('2025-09-15', 2, 5, 10, 800), -- Water on machine 2
+('2025-09-15', 3, 1, 2, 300), -- Aspirin on machine 3
+('2025-09-15', 3, 2, 1, 140), -- Paracetamol on machine 3
+
+('2025-09-30', 1, 1, 5, 750), -- Aspirin on machine 1
+('2025-09-30', 1, 4, 3, 600), -- Bandage on machine 1
+('2025-09-30', 1, 5, 13, 1040), -- Water on machine 1
+('2025-09-30', 2, 1, 3, 450), -- Aspirin on machine 2
+('2025-09-30', 2, 5, 8, 640), -- Water on machine 2
+('2025-09-30', 3, 5, 4, 320), -- Water on machine 3
+
+-- August 2025 sales
+('2025-08-01', 1, 1, 3, 450), -- Aspirin on machine 1
+('2025-08-01', 1, 5, 8, 640), -- Water on machine 1
+('2025-08-01', 2, 1, 4, 600), -- Aspirin on machine 2
+('2025-08-01', 2, 5, 6, 480), -- Water on machine 2
+('2025-08-01', 3, 1, 1, 150), -- Aspirin on machine 3
+('2025-08-01', 3, 5, 3, 240), -- Water on machine 3
+
+('2025-08-15', 1, 1, 6, 900), -- Aspirin on machine 1
+('2025-08-15', 1, 2, 2, 280), -- Paracetamol on machine 1
+('2025-08-15', 1, 5, 11, 880), -- Water on machine 1
+('2025-08-15', 2, 1, 5, 750), -- Aspirin on machine 2
+('2025-08-15', 2, 3, 3, 360), -- Vitamin C on machine 2
+('2025-08-15', 2, 5, 9, 720), -- Water on machine 2
+('2025-08-15', 3, 1, 2, 300), -- Aspirin on machine 3
+('2025-08-15', 3, 2, 1, 140), -- Paracetamol on machine 3
+
+('2025-08-30', 1, 1, 4, 600), -- Aspirin on machine 1
+('2025-08-30', 1, 3, 4, 480), -- Vitamin C on machine 1
+('2025-08-30', 1, 5, 10, 800), -- Water on machine 1
+('2025-08-30', 2, 1, 2, 300), -- Aspirin on machine 2
+('2025-08-30', 2, 4, 1, 200), -- Bandage on machine 2
+('2025-08-30', 2, 5, 7, 560), -- Water on machine 2
+('2025-08-30', 3, 5, 2, 160); -- Water on machine 3
+
 -- Update machine last_seen timestamps
 UPDATE public.vending_machines SET last_seen = NOW() WHERE status = 'online';
 UPDATE public.vending_machines SET last_seen = NOW() - INTERVAL '1 day' WHERE status = 'offline';
@@ -158,4 +250,9 @@ UNION ALL
 SELECT
   'Orders created',
   COUNT(*)
-FROM public.orders;
+FROM public.orders
+UNION ALL
+SELECT
+  'Product sales by day created',
+  COUNT(*)
+FROM public.product_sales_by_day;

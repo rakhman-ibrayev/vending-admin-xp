@@ -36,10 +36,12 @@ export async function GET(request: Request) {
         `
         id, 
         status,
+        machine_id,
         machine_products (
           id,
           current_stock,
           max_capacity,
+          product_id,
           products (price)
         )
       `
@@ -119,6 +121,9 @@ export async function GET(request: Request) {
 
       // Validate payment amount
       if (productPrice && parseFloat(sum) !== productPrice) {
+        console.error(
+          `Payment amount mismatch. Expected: ${formattedSum}, Received: ${sum}`
+        )
         return buildResponse(
           txn_id,
           RESPONSE_CODES.INTERNAL_ERROR,
@@ -134,6 +139,7 @@ export async function GET(request: Request) {
       try {
         kaspiDate = parseKaspiDate(txn_date)
       } catch (dateError) {
+        console.error('Error parsing transaction date:', dateError)
         return buildResponse(
           txn_id,
           RESPONSE_CODES.INTERNAL_ERROR,
@@ -175,6 +181,53 @@ export async function GET(request: Request) {
         if (stockError) {
           // Don't fail the payment if stock update fails, just log it
           console.error('Error updating stock:', stockError)
+        }
+      }
+
+      // Update product sales by day analytics
+      if (order.machine_id && machineProduct?.product_id && productPrice) {
+        const saleDate = kaspiDate.toISOString().split('T')[0] // YYYY-MM-DD format
+
+        // Try to update existing record first (increment sales)
+        const { data: existingSale, error: selectError } = await supabase
+          .from('product_sales_by_day')
+          .select('num_sales, amount')
+          .eq('day', saleDate)
+          .eq('machine_id', order.machine_id)
+          .eq('product_id', machineProduct.product_id)
+          .single()
+
+        if (existingSale && !selectError) {
+          // Update existing record
+          const { error: updateSalesError } = await supabase
+            .from('product_sales_by_day')
+            .update({
+              num_sales: (existingSale.num_sales || 0) + 1,
+              amount: (existingSale.amount || 0) + productPrice,
+              updated_at: new Date().toISOString()
+            })
+            .eq('day', saleDate)
+            .eq('machine_id', order.machine_id)
+            .eq('product_id', machineProduct.product_id)
+
+          if (updateSalesError) {
+            console.error('Error updating sales analytics:', updateSalesError)
+          }
+        } else {
+          // Insert new record
+          const { error: insertSalesError } = await supabase
+            .from('product_sales_by_day')
+            .insert({
+              day: saleDate,
+              machine_id: order.machine_id,
+              product_id: machineProduct.product_id,
+              num_sales: 1,
+              amount: productPrice
+            })
+
+          if (insertSalesError) {
+            console.error('Error inserting sales analytics:', insertSalesError)
+          }
         }
       }
 
