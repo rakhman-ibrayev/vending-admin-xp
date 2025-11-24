@@ -17,7 +17,6 @@ import {
   Calendar,
   Thermometer,
   TrendingUp,
-  Wrench,
   Clock,
   Activity,
   BarChart3
@@ -89,12 +88,6 @@ export default function MachineDetailPage() {
             <BarChart3 className="h-4 w-4" />
 
             <span className="hidden md:inline">Аналитика</span>
-          </TabsTrigger>
-
-          <TabsTrigger value="maintenance" className="gap-2">
-            <Wrench className="h-4 w-4" />
-
-            <span className="hidden md:inline">Обслуживание</span>
           </TabsTrigger>
         </TabsList>
 
@@ -226,19 +219,6 @@ export default function MachineDetailPage() {
           <div className="space-y-6">
             <SalesAnalytics machineId={machine.id} />
           </div>
-        </TabsContent>
-
-        <TabsContent value="maintenance">
-          <Card>
-            <CardHeader>
-              <CardTitle>История обслуживания</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Здесь будет история технического обслуживания
-              </p>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </main>
