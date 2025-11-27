@@ -1,6 +1,6 @@
 import type { NextResponse } from 'next/server'
 
-interface DefaultResponse<T> {
+export interface DefaultResponse<T> {
   success: boolean
   message?: string
   data?: T

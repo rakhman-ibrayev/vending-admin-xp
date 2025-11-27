@@ -35,6 +35,7 @@ export interface FormData {
   longitude?: number
   num_slots: number
   technician_password: string
+  support_contacts: string
 }
 
 const initialValues: FormData = {
@@ -48,7 +49,8 @@ const initialValues: FormData = {
   stop_bits: 1,
   target_temperature: 15,
   num_slots: 120,
-  technician_password: ''
+  technician_password: '',
+  support_contacts: ''
 }
 
 const validationSchema = Yup.object().shape({
@@ -65,7 +67,8 @@ const validationSchema = Yup.object().shape({
   latitude: Yup.number(),
   longitude: Yup.number(),
   num_slots: Yup.number().min(1, 'Минимум 1').required('Обязательное поле'),
-  technician_password: Yup.string().required('Обязательное поле')
+  technician_password: Yup.string().required('Обязательное поле'),
+  support_contacts: Yup.string().required('Обязательное поле')
 })
 
 interface AddMachineDialogProps {
@@ -228,6 +231,23 @@ export function AddMachineDialog({
               />
               <ErrorMessage
                 name="technician_password"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="support_contacts">Контакты поддержки *</Label>
+              <Input
+                id="support_contacts"
+                name="support_contacts"
+                value={formik.values.support_contacts}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="Контакты для связи с поддержкой"
+              />
+              <ErrorMessage
+                name="support_contacts"
                 component="div"
                 className="text-destructive text-xs"
               />

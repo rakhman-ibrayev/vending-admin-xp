@@ -42,7 +42,8 @@ const EditMachine = ({ machineId }: EditMachineProps) => {
           num_slots: machine.num_slots || 0,
           technician_password: machine.technician_password || '',
           description: machine.description || '',
-          target_temperature: machine.target_temperature || undefined
+          target_temperature: machine.target_temperature || undefined,
+          support_contacts: machine.support_contacts || ''
         }}
         onSubmit={async values => {
           await updateMutation.mutateAsync({

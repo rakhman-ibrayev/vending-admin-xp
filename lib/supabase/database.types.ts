@@ -229,6 +229,7 @@ export type Database = {
           serial_number: string
           status: Database["public"]["Enums"]["machine_status"]
           stop_bits: number
+          support_contacts: string | null
           target_temperature: number
           technician_password: string | null
           temperature: number | null
@@ -250,6 +251,7 @@ export type Database = {
           serial_number: string
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
+          support_contacts?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null
@@ -271,6 +273,7 @@ export type Database = {
           serial_number?: string
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
+          support_contacts?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null
