@@ -203,8 +203,7 @@ export async function GET(request: Request) {
             .from('product_sales_by_day')
             .update({
               num_sales: (existingSale.num_sales || 0) + 1,
-              amount: (existingSale.amount || 0) + productPrice,
-              updated_at: new Date().toISOString()
+              amount: (existingSale.amount || 0) + productPrice
             })
             .eq('day', saleDate)
             .eq('machine_id', order.machine_id)
