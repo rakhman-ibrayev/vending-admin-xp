@@ -1,77 +1,118 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
+import {
+  type ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart'
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
+import { formatDate } from '@/lib/dates/format-date'
 
-const salesData = [
-  { date: '01.01', sales: 45000, transactions: 234 },
-  { date: '02.01', sales: 52000, transactions: 267 },
-  { date: '03.01', sales: 48000, transactions: 245 },
-  { date: '04.01', sales: 61000, transactions: 312 },
-  { date: '05.01', sales: 55000, transactions: 289 },
-  { date: '06.01', sales: 67000, transactions: 345 },
-  { date: '07.01', sales: 73000, transactions: 378 },
-  { date: '08.01', sales: 69000, transactions: 356 },
-  { date: '09.01', sales: 78000, transactions: 401 },
-  { date: '10.01', sales: 82000, transactions: 423 },
-  { date: '11.01', sales: 75000, transactions: 387 },
-  { date: '12.01', sales: 88000, transactions: 456 }
-]
-
-const chartConfig = {
-  sales: {
-    label: 'Продажи',
-    color: 'hsl(var(--chart-1))'
-  },
-  transactions: {
-    label: 'Транзакции',
-    color: 'hsl(var(--chart-2))'
-  }
+interface SalesChartProps {
+  data?: Array<{ date: string; revenue: number; sales: number }>
+  dateRange?: { startDate: string; endDate: string }
 }
 
-export function SalesChart() {
+const chartConfig = {
+  revenue: {
+    label: 'Выручка',
+    color: 'var(--chart-1)'
+  }
+} satisfies ChartConfig
+
+export function SalesChart({ data, dateRange }: SalesChartProps) {
+  const processedData =
+    data?.map(item => ({
+      date: item.date,
+      revenue: item.revenue,
+      sales: item.sales
+    })) ?? []
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="font-[family-name:var(--font-work-sans)]">
-          Динамика продаж
-        </CardTitle>
+    <Card className="pt-0">
+      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+        <div className="grid flex-1 gap-1">
+          <CardTitle className="font-[family-name:var(--font-work-sans)]">
+            Динамика продаж
+          </CardTitle>
+          <CardDescription>
+            Показывает выручку за период: {formatDateRange(dateRange)}
+          </CardDescription>
+        </div>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={salesData}>
-              <XAxis
-                dataKey="date"
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#888888"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={value => `₸${value}`}
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Line
-                type="monotone"
-                dataKey="sales"
-                stroke="hsl(var(--chart-1))"
-                strokeWidth={2}
-                dot={{ fill: 'hsl(var(--chart-1))', strokeWidth: 2, r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[300px] w-full"
+        >
+          <AreaChart data={processedData}>
+            <defs>
+              <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop
+                  offset="5%"
+                  stopColor="var(--color-revenue)"
+                  stopOpacity={0.8}
+                />
+                <stop
+                  offset="95%"
+                  stopColor="var(--color-revenue)"
+                  stopOpacity={0.1}
+                />
+              </linearGradient>
+            </defs>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="date"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={value => formatDate(value, { format: 'daymonth' })}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  labelFormatter={value =>
+                    formatDate(value, { format: 'daymonth' })
+                  }
+                  indicator="dot"
+                />
+              }
+            />
+            <Area
+              dataKey="revenue"
+              type="monotone"
+              fill="url(#fillRevenue)"
+              stroke="var(--color-revenue)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4, fill: 'var(--color-revenue)' }}
+            />
+            <ChartLegend content={<ChartLegendContent />} />
+          </AreaChart>
         </ChartContainer>
       </CardContent>
     </Card>
   )
+}
+
+function formatDateRange(range?: { startDate: string; endDate: string }) {
+  if (!range) return ''
+  try {
+    const start = formatDate(range.startDate, { format: 'daymonth' })
+    const end = formatDate(range.endDate, { format: 'daymonth' })
+    return `${start} - ${end}`
+  } catch (e) {
+    return ''
+  }
 }

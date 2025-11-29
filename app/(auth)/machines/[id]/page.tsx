@@ -16,9 +16,7 @@ import {
   MapPin,
   Calendar,
   Thermometer,
-  Package,
   TrendingUp,
-  Wrench,
   Clock,
   Activity,
   BarChart3
@@ -28,22 +26,20 @@ import { MachineStatus } from '@/components/machine-status'
 import { OrderStatus } from '@/components/order-status'
 import { useVendingMachineOrders } from '@/entities/vending-machines/use-vending-machine-orders'
 import { useVendingMachineProducts } from '@/entities/vending-machines/use-vending-machine-products'
-import { formatDate, formatPrice, getTodayRange } from '@/lib/supabase/helpers'
 import { EditMachine } from '@/features/edit-machine'
 import { MachineRestock } from '@/features/machine-restock'
+import { getTodayRange } from '@/lib/dates/get-today-range'
+import { formatDate } from '@/lib/dates/format-date'
+import { formatPrice } from '@/lib/prices/format-price'
+import { SalesAnalytics } from '@/components/sales-analytics'
 
 export default function MachineDetailPage() {
-  const { startDate, endDate } = getTodayRange()
-
   const params = useParams()
   const machineId = Number(params.id)
 
   const machineQuery = useVendingMachine(machineId)
   const productsQuery = useVendingMachineProducts(machineId)
-  const ordersQuery = useVendingMachineOrders(machineId, {
-    startDate,
-    endDate
-  })
+  const ordersQuery = useVendingMachineOrders(machineId, getTodayRange())
 
   if (
     machineQuery.isLoading ||
@@ -93,12 +89,6 @@ export default function MachineDetailPage() {
 
             <span className="hidden md:inline">Аналитика</span>
           </TabsTrigger>
-
-          <TabsTrigger value="maintenance" className="gap-2">
-            <Wrench className="h-4 w-4" />
-
-            <span className="hidden md:inline">Обслуживание</span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -117,10 +107,6 @@ export default function MachineDetailPage() {
                   <span>{machine.location}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <span>Серийный номер: {machine.serial_number}</span>
-                </div>
-                <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>Установлен: {machine.createdAtFormatted}</span>
                 </div>
@@ -136,6 +122,7 @@ export default function MachineDetailPage() {
                 <MachineRestock
                   machineId={machine.id}
                   numSlots={machine.num_slots}
+                  machineSerialNumber={machine.serial_number}
                 />
               </CardFooter>
             </Card>
@@ -169,7 +156,7 @@ export default function MachineDetailPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Доходы за сегодня</CardTitle>
+                <CardTitle className="text-lg">Выручка за сегодня</CardTitle>
               </CardHeader>
 
               <CardContent>
@@ -229,29 +216,9 @@ export default function MachineDetailPage() {
         </TabsContent>
 
         <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Аналитика продаж</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Здесь будут графики и детальная аналитика по этому аппарату
-              </p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="maintenance">
-          <Card>
-            <CardHeader>
-              <CardTitle>История обслуживания</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Здесь будет история технического обслуживания
-              </p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <SalesAnalytics machineId={machine.id} />
+          </div>
         </TabsContent>
       </Tabs>
     </main>

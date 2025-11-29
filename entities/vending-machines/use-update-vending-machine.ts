@@ -1,9 +1,11 @@
 import { updateVendingMachine } from '@/lib/supabase/queries/update-vending-machine.query'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { vendingMachinesQueries } from './vending-machines.rq'
+import { useBroadcastToMachine } from './use-broadcast-to-machine'
 
 export function useUpdateVendingMachine() {
   const queryClient = useQueryClient()
+  const { mutateAsync: broadcast } = useBroadcastToMachine()
 
   return useMutation({
     mutationFn: updateVendingMachine,
@@ -25,6 +27,15 @@ export function useUpdateVendingMachine() {
       })
 
       return { previousMachine }
+    },
+
+    onSuccess: async updatedMachine => {
+      if (updatedMachine.data?.serial_number) {
+        await broadcast({
+          serial_number: updatedMachine.data.serial_number,
+          event: 'update'
+        })
+      }
     },
 
     onError: (_, { id }, context) => {

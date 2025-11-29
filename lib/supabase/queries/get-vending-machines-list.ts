@@ -1,9 +1,9 @@
 import { createClient } from '../client'
-import { formatDate, getActualStatus, getTodayRange } from '../helpers'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-
-dayjs.extend(utc)
+import { getTodayRange } from '@/lib/dates/get-today-range'
+import { formatDate } from '@/lib/dates/format-date'
+import type { DefaultResponse } from '@/lib/types'
+import type { TelemetryEntry } from '@/app/api/vending-machines/telemetry/route'
+import { getMachineStatus } from '@/lib/dates/get-machine-status'
 
 export const getVendingMachinesList = async () => {
   const supabase = createClient()
@@ -46,10 +46,22 @@ export const getVendingMachinesList = async () => {
     return []
   }
 
+  const telemetryRes = await fetch('/api/vending-machines/telemetry')
+  let machinesTelemetry: TelemetryEntry[] = []
+
+  if (telemetryRes.ok) {
+    const payload: DefaultResponse<TelemetryEntry[]> = await telemetryRes.json()
+    machinesTelemetry = payload.data || []
+  }
+
   return data?.map(machine => {
     const machineProducts = machine.machine_products ?? []
     const orders = machine.orders ?? []
     const totalCurrentStock = machineProducts.length
+    const telemetry = machinesTelemetry.find(t => t.id === machine.id)
+    const lastSeen = telemetry
+      ? telemetry.telemetry.lastSeen
+      : machine.last_seen
 
     const fillPercentage = Math.round(
       (totalCurrentStock / machine.num_slots) * 100
@@ -66,11 +78,13 @@ export const getVendingMachinesList = async () => {
       name: machine.name,
       location: machine.location,
       description: machine.description,
-      status: getActualStatus(machine.status, machine.last_seen),
+      status: getMachineStatus(lastSeen, machine.status),
       originalStatus: machine.status,
-      temperature: machine.temperature,
-      lastSeen: formatDate(machine.last_seen),
-      lastSeenRaw: machine.last_seen,
+      temperature: telemetry
+        ? telemetry.telemetry.temperature
+        : machine.temperature,
+      lastSeen: formatDate(lastSeen),
+      lastSeenRaw: lastSeen,
       serialNumber: machine.serial_number,
       currentStock: totalCurrentStock,
       fillPercentage,

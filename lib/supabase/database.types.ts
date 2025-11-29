@@ -115,7 +115,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "order_machine_id_fkey"
+            foreignKeyName: "orders_machine_id_fkey"
             columns: ["machine_id"]
             isOneToOne: false
             referencedRelation: "vending_machines"
@@ -126,6 +126,51 @@ export type Database = {
             columns: ["machine_product_id"]
             isOneToOne: false
             referencedRelation: "machine_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_sales_by_day: {
+        Row: {
+          amount: number | null
+          created_at: string
+          day: string | null
+          id: number
+          machine_id: number | null
+          num_sales: number | null
+          product_id: number | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          day?: string | null
+          id?: number
+          machine_id?: number | null
+          num_sales?: number | null
+          product_id?: number | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          day?: string | null
+          id?: number
+          machine_id?: number | null
+          num_sales?: number | null
+          product_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_sales_by_day_machine_id_fkey"
+            columns: ["machine_id"]
+            isOneToOne: false
+            referencedRelation: "vending_machines"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_sales_by_day_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -184,6 +229,7 @@ export type Database = {
           serial_number: string
           status: Database["public"]["Enums"]["machine_status"]
           stop_bits: number
+          support_contacts: string | null
           target_temperature: number
           technician_password: string | null
           temperature: number | null
@@ -205,6 +251,7 @@ export type Database = {
           serial_number: string
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
+          support_contacts?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null
@@ -226,6 +273,7 @@ export type Database = {
           serial_number?: string
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
+          support_contacts?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null

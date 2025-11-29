@@ -1,4 +1,4 @@
-import { convertKzDateToUTC } from '@/lib/utils'
+import { convertKzDateToUTC } from '@/lib/dates/convert-kz-date-to-utc'
 import { NextResponse } from 'next/server'
 
 export function buildResponse(
