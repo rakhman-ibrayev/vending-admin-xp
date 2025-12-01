@@ -145,19 +145,13 @@ export default function MachinesPage() {
           {filteredMachines.map(machine => (
             <Link href={`/machines/${machine.id}`} key={machine.id}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="pb-3">
+                <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-lg font-[family-name:var(--font-work-sans)]">
                         {machine.name}
                       </CardTitle>
-                      <div className="flex gap-2 flex-col">
-                        <MachineStatus status={machine.status} />
-
-                        <span className="text-sm text-muted-foreground">
-                          {machine.serialNumber}
-                        </span>
-                      </div>
+                      <MachineStatus status={machine.status} />
                     </div>
                   </div>
                 </CardHeader>
