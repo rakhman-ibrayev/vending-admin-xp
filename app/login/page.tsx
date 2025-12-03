@@ -58,7 +58,7 @@ function Login() {
 
             {state.error && (
               <div className="w-full text-center text-sm text-destructive bg-destructive/10 rounded-md py-2 mb-2">
-                {state.error.message}
+                Неверный email или пароль
               </div>
             )}
 

@@ -26,6 +26,8 @@ export async function login(
     revalidatePath('/', 'layout')
     const redirectTo = (formData.get(REDIRECT_PARAM) as string) || '/'
     redirect(redirectTo)
+  } else {
+    console.error('Login error:', error)
   }
 
   return { error }
