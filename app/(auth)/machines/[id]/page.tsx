@@ -58,9 +58,10 @@ export default function MachineDetailPage() {
 
   const fillPercentage = Math.round((products.length / machine.num_slots) * 100)
 
-  const revenue = orders
-    .filter(order => order.status === 'paid')
-    .reduce((sum, order) => sum + (order.amount_paid || 0), 0)
+  const revenue = orders.reduce(
+    (sum, order) => sum + (order.amount_paid || 0),
+    0
+  )
 
   return (
     <main className="space-y-6">
