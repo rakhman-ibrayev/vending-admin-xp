@@ -187,7 +187,7 @@ export default function MachineDetailPage() {
                   <Fragment key={order.id}>
                     <div className="flex flex-col justify-between gap-2">
                       <div className="flex items-center justify-between gap-3">
-                        <span>{order.machine_products?.products?.name}</span>
+                        <span>{order.product_name}</span>
 
                         {order.amount_paid ? (
                           <span className="font-bold">

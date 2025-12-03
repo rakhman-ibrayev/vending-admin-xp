@@ -22,8 +22,12 @@ export const getVendingMachinesList = async () => {
       last_seen,
       serial_number,
       num_slots,
-      machine_products!inner(id),
-      orders!inner(amount_paid)
+      machine_products(
+        id
+      ),
+      orders(
+        amount_paid
+      )
     `
     )
     .eq('orders.status', 'paid')
