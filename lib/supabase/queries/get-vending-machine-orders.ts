@@ -19,16 +19,9 @@ export interface PaginationParams {
 export const getVendingMachineOrders = async (
   machineId: number,
   filters?: OrdersFilterParams,
-  sort?: OrdersSortParams,
-  pagination?: PaginationParams
+  sort?: OrdersSortParams
 ) => {
   const supabase = createClient()
-
-  // Set default pagination values
-  const page = pagination?.page ?? 1
-  const pageSize = pagination?.pageSize ?? 20
-  const from = (page - 1) * pageSize
-  const to = from + pageSize - 1
 
   // Set default sort values
   const sortField = sort?.field ?? 'created_at'
@@ -73,26 +66,17 @@ export const getVendingMachineOrders = async (
   // Apply sorting
   query = query.order(sortField, { ascending: sortDirection === 'asc' })
 
-  // Apply pagination
-  const { data, error, count } = await query.range(from, to)
+  // Fetch all data without pagination
+  const { data, error, count } = await query
 
   if (error) {
     console.error('Error fetching orders:', error)
     throw error
   }
 
-  const totalPages = Math.ceil((count || 0) / pageSize)
-
   return {
     orders: data || [],
-    pagination: {
-      currentPage: page,
-      pageSize,
-      totalCount: count || 0,
-      totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1
-    },
+    totalCount: count || 0,
     filters: filters || {},
     sort: sort || { field: 'created_at', direction: 'desc' }
   }
