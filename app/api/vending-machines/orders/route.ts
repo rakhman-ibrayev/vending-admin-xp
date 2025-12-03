@@ -65,7 +65,7 @@ async function createOrder(
       .eq('slot_index', slot_index)
       .single()
 
-    if (productError) {
+    if (productError || !machineProduct.products) {
       console.error('Error fetching machine product:', productError)
       return NextResponse.json(
         { success: false, message: 'Product not found in specified slot' },

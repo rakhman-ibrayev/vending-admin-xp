@@ -153,6 +153,7 @@ export async function GET(request: Request) {
         .from('orders')
         .update({
           status: 'paid',
+          amount_paid: productPrice,
           date_paid: kaspiDate.toISOString(),
           updated_at: new Date().toISOString()
         })

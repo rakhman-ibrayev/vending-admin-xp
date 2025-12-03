@@ -60,10 +60,7 @@ export default function MachineDetailPage() {
 
   const revenue = orders
     .filter(order => order.status === 'paid')
-    .reduce(
-      (sum, order) => sum + (order.machine_products?.products?.price || 0),
-      0
-    )
+    .reduce((sum, order) => sum + (order.amount_paid || 0), 0)
 
   return (
     <main className="space-y-6">
@@ -191,11 +188,11 @@ export default function MachineDetailPage() {
                       <div className="flex items-center justify-between gap-3">
                         <span>{order.machine_products?.products?.name}</span>
 
-                        <span className="font-bold">
-                          {formatPrice(
-                            order.machine_products?.products?.price || ''
-                          )}
-                        </span>
+                        {order.amount_paid ? (
+                          <span className="font-bold">
+                            {formatPrice(order.amount_paid)}
+                          </span>
+                        ) : null}
                       </div>
 
                       <div className="flex items-center justify-between gap-3">
