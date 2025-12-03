@@ -57,7 +57,8 @@ async function createOrder(
           id,
           name,
           price,
-          sku
+          sku,
+          category
         )
       `
       )
@@ -82,14 +83,18 @@ async function createOrder(
       )
     }
 
-    // Create order directly
+    // Create order with denormalized product data
     const { data: order, error: insertError } = await supabase
       .from('orders')
       .insert({
         machine_id: machine.id,
         machine_product_id: machineProduct.id,
         machine_command: vendProduct(slot_index - 1),
-        status: 'created'
+        status: 'created',
+        product_name: machineProduct.products.name,
+        product_sku: machineProduct.products.sku,
+        product_category: machineProduct.products.category,
+        slot_index: machineProduct.slot_index
       })
       .select('id')
       .single()

@@ -91,6 +91,10 @@ export type Database = {
           machine_command: string | null
           machine_id: number | null
           machine_product_id: number | null
+          product_category: string | null
+          product_name: string | null
+          product_sku: string | null
+          slot_index: number | null
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string | null
         }
@@ -102,6 +106,10 @@ export type Database = {
           machine_command?: string | null
           machine_id?: number | null
           machine_product_id?: number | null
+          product_category?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          slot_index?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string | null
         }
@@ -113,6 +121,10 @@ export type Database = {
           machine_command?: string | null
           machine_id?: number | null
           machine_product_id?: number | null
+          product_category?: string | null
+          product_name?: string | null
+          product_sku?: string | null
+          slot_index?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string | null
         }

@@ -35,16 +35,11 @@ export const getVendingMachineOrders = async (
       id,
       status,
       created_at,
-      machine_product_id,
       amount_paid,
-      machine_products (
-        slot_index,
-        current_stock,
-        max_capacity,
-        products (
-          name
-        )
-      )
+      product_name,
+      product_sku,
+      product_category,
+      slot_index
     `,
       { count: 'exact' }
     )
