@@ -117,23 +117,23 @@ INSERT INTO public.machine_products (machine_id, product_id, slot_index, current
 (3, 5, 3, 5, 20, NOW() - INTERVAL '2 days'); -- Вода минеральная in slot 3
 
 -- Insert sample orders
-INSERT INTO public.orders (machine_id, machine_product_id, status, machine_command, date_paid) VALUES
+INSERT INTO public.orders (machine_id, machine_product_id, status, machine_command, date_paid, amount_paid) VALUES
 -- Recent successful orders
-(1, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '30 minutes'),
-(1, 3, 'paid', 'VEND_SLOT_03', NOW() - INTERVAL '1 hour'),
-(2, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '2 hours'),
-(1, 5, 'paid', 'VEND_SLOT_05', NOW() - INTERVAL '3 hours'),
+(1, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '30 minutes', 150),
+(1, 3, 'paid', 'VEND_SLOT_03', NOW() - INTERVAL '1 hour', 120),
+(2, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '2 hours', 150),
+(1, 5, 'paid', 'VEND_SLOT_05', NOW() - INTERVAL '3 hours', 80),
 
 -- Pending/failed orders
-(1, 2, 'created', NULL, NULL),
-(2, 4, 'failed', 'VEND_SLOT_04', NOW() - INTERVAL '4 hours'),
-(3, 1, 'cancelled', NULL, NOW() - INTERVAL '5 hours'),
+(1, 2, 'created', NULL, NULL, NULL),
+(2, 4, 'failed', 'VEND_SLOT_04', NOW() - INTERVAL '4 hours', 80),
+(3, 1, 'cancelled', NULL, NOW() - INTERVAL '5 hours', NULL),
 
 -- Older successful orders
-(1, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '1 day'),
-(1, 4, 'paid', 'VEND_SLOT_04', NOW() - INTERVAL '1 day'),
-(2, 5, 'paid', 'VEND_SLOT_04', NOW() - INTERVAL '2 days'),
-(1, 6, 'paid', 'VEND_SLOT_06', NOW() - INTERVAL '3 days');
+(1, 1, 'paid', 'VEND_SLOT_01', NOW() - INTERVAL '1 day', 150),
+(1, 4, 'paid', 'VEND_SLOT_04', NOW() - INTERVAL '1 day', 200),
+(2, 5, 'paid', 'VEND_SLOT_04', NOW() - INTERVAL '2 days', 80),
+(1, 6, 'paid', 'VEND_SLOT_06', NOW() - INTERVAL '3 days', 180);
 
 -- Insert sample product sales by day
 INSERT INTO public.product_sales_by_day (day, machine_id, product_id, num_sales, amount) VALUES

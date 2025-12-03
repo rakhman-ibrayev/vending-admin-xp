@@ -71,12 +71,12 @@ export async function GET(request: Request): RouteResponse<SaleResponse[]> {
         machine_id,
         date_paid,
         created_at,
+        amount_paid,
         machine_product_id,
         machine_products (
           product_id,
           products (
-            sku,
-            price
+            sku
           )
         )
       `
@@ -96,7 +96,7 @@ export async function GET(request: Request): RouteResponse<SaleResponse[]> {
         sale_id: order.id,
         machine_id: order.machine_id,
         sale_time: kzTime.toISOString(),
-        amount: order.machine_products?.products?.price ?? null,
+        amount: order.amount_paid,
         product_identifier: order.machine_products?.products?.sku ?? null
       }
     })

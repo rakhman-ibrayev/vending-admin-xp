@@ -43,17 +43,13 @@ export const getVendingMachineOrders = async (
       status,
       created_at,
       machine_product_id,
+      amount_paid,
       machine_products (
         slot_index,
         current_stock,
         max_capacity,
         products (
-          id,
-          name,
-          price,
-          sku,
-          image,
-          category
+          name
         )
       )
     `,

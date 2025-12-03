@@ -1,21 +1,31 @@
 export const getTodayRange = () => {
   const now = new Date()
-  const start = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+
+  // Local start of day
+  const startLocal = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+    0
   )
-  const end = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate(),
-      23,
-      59,
-      59,
-      999
-    )
+
+  // Local end of day
+  const endLocal = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59,
+    999
   )
+
+  // converted to UTC
   return {
-    startDate: start.toISOString(),
-    endDate: end.toISOString()
+    startDate: startLocal.toISOString(),
+    endDate: endLocal.toISOString()
   }
 }

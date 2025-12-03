@@ -22,18 +22,8 @@ export const getVendingMachinesList = async () => {
       last_seen,
       serial_number,
       num_slots,
-      machine_products (
-        current_stock,
-        max_capacity
-      ),
-      orders (
-        status,
-        machine_products (
-            products (
-                price
-            )
-        )
-      )
+      machine_products!inner(id),
+      orders!inner(amount_paid)
     `
     )
     .eq('orders.status', 'paid')
@@ -55,23 +45,20 @@ export const getVendingMachinesList = async () => {
   }
 
   return data?.map(machine => {
-    const machineProducts = machine.machine_products ?? []
-    const orders = machine.orders ?? []
-    const totalCurrentStock = machineProducts.length
+    const machineProductsCount = machine.machine_products?.length ?? 0
+    const todayRevenue =
+      machine.orders?.reduce(
+        (sum, order) => sum + (order.amount_paid || 0),
+        0
+      ) ?? 0
     const telemetry = machinesTelemetry.find(t => t.id === machine.id)
     const lastSeen = telemetry
       ? telemetry.telemetry.lastSeen
       : machine.last_seen
 
     const fillPercentage = Math.round(
-      (totalCurrentStock / machine.num_slots) * 100
+      (machineProductsCount / machine.num_slots) * 100
     )
-
-    const todayRevenue = orders.reduce((sum, order) => {
-      if (order.status !== 'paid') return sum + 0
-
-      return sum + (order.machine_products?.products?.price || 0)
-    }, 0)
 
     return {
       id: machine.id,
@@ -86,7 +73,7 @@ export const getVendingMachinesList = async () => {
       lastSeen: formatDate(lastSeen),
       lastSeenRaw: lastSeen,
       serialNumber: machine.serial_number,
-      currentStock: totalCurrentStock,
+      currentStock: machineProductsCount,
       fillPercentage,
       numSlots: machine.num_slots,
       todayRevenue

@@ -84,6 +84,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          amount_paid: number | null
           created_at: string
           date_paid: string | null
           id: number
@@ -94,6 +95,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          amount_paid?: number | null
           created_at?: string
           date_paid?: string | null
           id?: number
@@ -104,6 +106,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          amount_paid?: number | null
           created_at?: string
           date_paid?: string | null
           id?: number
