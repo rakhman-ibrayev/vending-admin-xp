@@ -30,7 +30,7 @@ export const getVendingMachinesList = async () => {
       )
     `
     )
-    .eq('orders.status', 'paid')
+    .not('orders.amount_paid', 'is', null)
     .gte('orders.created_at', startDate)
     .lte('orders.created_at', endDate)
     .order('id')

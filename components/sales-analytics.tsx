@@ -25,7 +25,7 @@ interface SalesAnalyticsProps {
 }
 
 const SalesAnalytics = ({ machineId }: SalesAnalyticsProps) => {
-  const [selectedPeriod, setSelectedPeriod] = useState('30d')
+  const [selectedPeriod, setSelectedPeriod] = useState('today')
 
   // Calculate date range based on selected period
   const calculatedDateRange = useMemo(() => {
@@ -34,6 +34,9 @@ const SalesAnalytics = ({ machineId }: SalesAnalyticsProps) => {
     let end: Date = today
 
     switch (selectedPeriod) {
+      case 'today':
+        start = today
+        break
       case '7d':
         start = subDays(today, 6) // Last 7 days including today
         break
@@ -122,6 +125,7 @@ const SalesAnalytics = ({ machineId }: SalesAnalyticsProps) => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="today">Сегодня</SelectItem>
               <SelectItem value="7d">Последние 7 дней</SelectItem>
               <SelectItem value="30d">Последние 30 дней</SelectItem>
               <SelectItem value="90d">Последние 3 месяца</SelectItem>
