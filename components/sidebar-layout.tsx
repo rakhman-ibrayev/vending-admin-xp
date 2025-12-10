@@ -12,7 +12,7 @@ export function SidebarLayout({ user, children }: SidebarLayoutProps) {
     <div className="flex min-h-screen bg-background">
       <Sidebar user={user} />
 
-      <div className="flex-1 md:ml-64 p-4">{children}</div>
+      <div className="flex-1 md:ml-64 p-4 max-w-full">{children}</div>
     </div>
   )
 }
