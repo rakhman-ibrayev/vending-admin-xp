@@ -165,7 +165,9 @@ export default function MachinesPage() {
                   {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-muted-foreground">Доход сегодня</div>
+                      <div className="text-muted-foreground">
+                        Выручка сегодня
+                      </div>
                       <div className="font-semibold">
                         ₸{machine.todayRevenue.toLocaleString()}
                       </div>

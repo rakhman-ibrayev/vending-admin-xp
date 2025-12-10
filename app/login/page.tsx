@@ -39,7 +39,7 @@ function Login() {
                 required
                 disabled={isPending}
                 autoComplete="email"
-                placeholder="user@pharmexpress.kz"
+                placeholder="login@expresspharm.kz"
               />
             </div>
 

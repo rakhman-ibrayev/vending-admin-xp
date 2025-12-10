@@ -267,7 +267,7 @@ export default function InventoryPage() {
       </Card>
 
       {/* Products Table */}
-      <Card className="w-[calc(100vw-50px)] md:w-auto">
+      <Card className="w-[calc(100vw-32px)] md:w-auto">
         <CardHeader>
           <CardTitle>Товары ({filteredProducts.length})</CardTitle>
         </CardHeader>

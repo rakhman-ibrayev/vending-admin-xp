@@ -91,20 +91,18 @@ export function ProductPerformanceChart({
                 key={item.name}
                 className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-100 hover:shadow-sm transition-shadow duration-200"
               >
-                <div className="flex items-center gap-3">
+                <figure className="flex items-center gap-3">
                   <div
-                    className="w-4 h-4 rounded-full shadow-sm"
+                    className="w-3 h-3 rounded-full shadow-sm"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-sm font-medium text-gray-900 truncate">
+
+                  <figcaption className="text-sm font-medium text-gray-900">
                     {item.name}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-gray-900">
-                    {item.value}%
-                  </span>
-                </div>
+                  </figcaption>
+                </figure>
+
+                <p className="font-bold text-gray-900">{item.value}%</p>
               </div>
             ))}
           </div>

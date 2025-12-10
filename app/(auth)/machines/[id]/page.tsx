@@ -74,8 +74,8 @@ export default function MachineDetailPage() {
         <MachineStatus status={machine.status} />
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="w-full">
+      <Tabs defaultValue="overview">
+        <TabsList className="w-full mb-6">
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="h-4 w-4" />
 
