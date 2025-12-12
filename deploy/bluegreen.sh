@@ -61,6 +61,9 @@ docker compose up -d "$NEW" || die "Failed to start $NEW"
 NEW_ID=$(docker compose ps -q "$NEW" || die "Failed to get ID for $NEW")
 NEW_CONTAINER_NAME=$(get_cname "$NEW_ID")
 
+log "Pre-disconnecting $NEW_CONTAINER_NAME from $CADDY_NET..."
+docker network disconnect "$CADDY_NET" "$NEW_CONTAINER_NAME" 2>/dev/null || true
+
 log "Attaching alias '$ALIAS_NAME' to $NEW_CONTAINER_NAME (Dual-Homing)."
 docker network connect --alias "$ALIAS_NAME" "$CADDY_NET" "$NEW_CONTAINER_NAME" || die "Failed to connect network alias"
 
