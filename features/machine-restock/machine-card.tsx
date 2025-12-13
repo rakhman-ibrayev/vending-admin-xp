@@ -136,9 +136,9 @@ const MachineCard = memo(
                     className="w-16 text-center"
                     min="0"
                   />
-
-                  <span>(На складе: {productStock})</span>
                 </div>
+
+                <span className="text-sm">(На складе: {productStock})</span>
 
                 {validationError && (
                   <div className="text-xs text-red-600 font-medium">

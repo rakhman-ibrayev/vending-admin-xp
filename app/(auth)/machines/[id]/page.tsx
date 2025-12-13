@@ -2,13 +2,7 @@
 
 import { Fragment } from 'react'
 import { useParams } from 'next/navigation'
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProgressBar } from '@/components/progress-bar'
@@ -19,7 +13,8 @@ import {
   TrendingUp,
   Clock,
   Activity,
-  BarChart3
+  BarChart3,
+  Package
 } from 'lucide-react'
 import { useVendingMachine } from '@/entities/vending-machines/use-vending-machine'
 import { MachineStatus } from '@/components/machine-status'
@@ -82,6 +77,12 @@ export default function MachineDetailPage() {
             <span className="hidden md:inline">Обзор</span>
           </TabsTrigger>
 
+          <TabsTrigger value="restock" className="gap-2">
+            <Package className="h-4 w-4" />
+
+            <span className="hidden md:inline">Пополнение</span>
+          </TabsTrigger>
+
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="h-4 w-4" />
 
@@ -115,14 +116,6 @@ export default function MachineDetailPage() {
                   </span>
                 </div>
               </CardContent>
-
-              <CardFooter>
-                <MachineRestock
-                  machineId={machine.id}
-                  numSlots={machine.num_slots}
-                  machineSerialNumber={machine.serial_number}
-                />
-              </CardFooter>
             </Card>
 
             <Card>
@@ -211,6 +204,14 @@ export default function MachineDetailPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="restock">
+          <MachineRestock
+            machineId={machine.id}
+            slotsCount={machine.num_slots}
+            machineSerialNumber={machine.serial_number}
+          />
         </TabsContent>
 
         <TabsContent value="analytics">
