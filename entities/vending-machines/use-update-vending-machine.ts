@@ -2,6 +2,7 @@ import { updateVendingMachine } from '@/lib/supabase/queries/update-vending-mach
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { vendingMachinesQueries } from './vending-machines.rq'
 import { useBroadcastToMachine } from './use-broadcast-to-machine'
+import { toast } from 'sonner'
 
 export function useUpdateVendingMachine() {
   const queryClient = useQueryClient()
@@ -31,10 +32,18 @@ export function useUpdateVendingMachine() {
 
     onSuccess: async updatedMachine => {
       if (updatedMachine.data?.serial_number) {
-        await broadcast({
-          serial_number: updatedMachine.data.serial_number,
-          event: 'update'
-        })
+        try {
+          await broadcast({
+            serial_number: updatedMachine.data.serial_number,
+            event: 'update'
+          })
+        } catch (error) {
+          toast.error('Не удалось оповестить аппарат', {
+            description:
+              'Изменения сохранены, но аппарат может не обновиться сразу',
+            closeButton: true
+          })
+        }
       }
     },
 
