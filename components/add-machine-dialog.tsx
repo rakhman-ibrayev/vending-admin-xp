@@ -220,14 +220,15 @@ export function AddMachineDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="technician_password">Пароль техника *</Label>
+              <Label htmlFor="technician_password">Код техника *</Label>
               <Input
                 id="technician_password"
                 name="technician_password"
+                type="number"
                 value={formik.values.technician_password}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                placeholder="Пароль для сервисного доступа"
+                placeholder="Код для сервисного доступа"
               />
               <ErrorMessage
                 name="technician_password"
