@@ -37,13 +37,8 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
   const {
-    data: { user },
-    error
+    data: { user }
   } = await supabase.auth.getUser()
-
-  if (error) {
-    console.error('Auth error in middleware:', error.message)
-  }
 
   if (
     !user &&
