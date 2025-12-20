@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { cn } from '@/lib/classnames/cn'
+import { formatPrice } from '@/lib/prices/format-price'
 
 interface TopProductsTableProps {
   data?: Array<{
@@ -12,7 +13,7 @@ interface TopProductsTableProps {
 }
 
 export function TopProductsTable({ data }: TopProductsTableProps) {
-  const processedData = (data ?? []).slice(0, 5).map(item => {
+  const processedData = (data ?? []).map(item => {
     const change = item.change == null ? null : item.change
     const trend = change == null ? 'neutral' : change >= 0 ? 'up' : 'down'
 
@@ -39,18 +40,19 @@ export function TopProductsTable({ data }: TopProductsTableProps) {
               className="flex items-center justify-between p-3 border rounded-lg"
             >
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
-                  <span className="text-sm font-bold text-primary">
-                    {index + 1}
-                  </span>
-                </div>
+                <p className="flex items-center justify-center w-6 h-6 bg-primary/10 rounded-full text-sm font-bold text-primary shrink-0">
+                  {index + 1}
+                </p>
+
                 <div>
-                  <div className="font-medium text-sm">{product.name}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {product.sales} продаж • ₸{product.revenue.toLocaleString()}
-                  </div>
+                  <p className="font-medium text-sm">{product.name}</p>
+
+                  <p className="text-xs text-muted-foreground">
+                    {product.sales} продаж • {formatPrice(product.revenue)}
+                  </p>
                 </div>
               </div>
+
               <div className="flex items-center gap-1">
                 {product.trend === 'neutral' ? null : product.trend === 'up' ? (
                   <TrendingUp className="h-3 w-3 text-green-500" />

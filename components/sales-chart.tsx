@@ -25,7 +25,7 @@ interface SalesChartProps {
 
 const chartConfig = {
   revenue: {
-    label: 'Выручка',
+    label: 'Выручка ',
     color: 'var(--chart-1)'
   }
 } satisfies ChartConfig
@@ -76,14 +76,20 @@ export function SalesChart({ data, dateRange }: SalesChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={value => formatDate(value, { format: 'daymonth' })}
+              interval="preserveStartEnd"
+              tickFormatter={value =>
+                formatDate(value, { format: 'custom', customFormat: 'dd.MM' })
+              }
             />
             <ChartTooltip
               cursor={false}
               content={
                 <ChartTooltipContent
                   labelFormatter={value =>
-                    formatDate(value, { format: 'daymonth' })
+                    formatDate(value, {
+                      format: 'custom',
+                      customFormat: 'dd.MM'
+                    })
                   }
                   indicator="dot"
                 />

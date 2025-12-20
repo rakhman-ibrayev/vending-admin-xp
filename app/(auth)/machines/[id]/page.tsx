@@ -92,7 +92,7 @@ export default function MachineDetailPage() {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Basic Info */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex items-center justify-between">
                 <CardTitle className="text-lg">Основная информация</CardTitle>
@@ -175,15 +175,15 @@ export default function MachineDetailPage() {
             </CardHeader>
 
             <CardContent>
-              <div className="space-y-3 text-sm">
-                {ordersQuery.data.orders.map(order => (
+              <div className="space-y-4 text-sm">
+                {ordersQuery.data.orders.map((order, index) => (
                   <Fragment key={order.id}>
                     <div className="flex flex-col justify-between gap-2">
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex justify-between gap-3">
                         <span>{order.product_name}</span>
 
                         {order.amount_paid ? (
-                          <span className="font-bold">
+                          <span className="font-bold whitespace-nowrap">
                             {formatPrice(order.amount_paid)}
                           </span>
                         ) : null}
@@ -193,12 +193,16 @@ export default function MachineDetailPage() {
                         <OrderStatus status={order.status} />
 
                         <span className="text-muted-foreground">
-                          {formatDate(order.created_at)}
+                          {formatDate(order.created_at, {
+                            format: 'time'
+                          })}
                         </span>
                       </div>
                     </div>
 
+                    {index !== ordersQuery.data.orders.length - 1 && (
                     <Separator />
+                    )}
                   </Fragment>
                 ))}
               </div>

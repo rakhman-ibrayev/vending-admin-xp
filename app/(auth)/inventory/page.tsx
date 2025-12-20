@@ -217,13 +217,20 @@ export default function InventoryPage() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2 bg-transparent">
+                <Button
+                  variant="outline"
+                  className="gap-2 bg-transparent min-w-0"
+                >
                   <Filter className="h-4 w-4" />
-                  Категория: {categoryFilter}
+                  <span className="truncate">Категория: {categoryFilter}</span>
                 </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent className="p-0 w-[var(--radix-popper-anchor-width)]">
+                <DropdownMenuItem onClick={() => setCategoryFilter('Все')}>
+                  Все
+                </DropdownMenuItem>
+
                 {categories.map(category => (
                   <DropdownMenuItem
                     key={category}
