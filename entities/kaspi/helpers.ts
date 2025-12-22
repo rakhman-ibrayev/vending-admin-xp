@@ -1,13 +1,12 @@
-import { convertKzDateToUTC } from '@/lib/dates/convert-kz-date-to-utc'
 import { NextResponse } from 'next/server'
 
-export function buildResponse(
+export const buildResponse = (
   txn_id: string,
   result: number,
   comment: string,
   prv_txn?: string,
   sum?: string
-) {
+) => {
   const response: any = {
     txn_id,
     result,
@@ -21,7 +20,7 @@ export function buildResponse(
   return NextResponse.json({ response }, { status: 200 })
 }
 
-export function parseKaspiDate(dateStr: string): Date {
+export const parseKaspiDate = (dateStr: string): Date => {
   const year = parseInt(dateStr.slice(0, 4))
   const month = parseInt(dateStr.slice(4, 6)) - 1
   const day = parseInt(dateStr.slice(6, 8))
@@ -29,11 +28,9 @@ export function parseKaspiDate(dateStr: string): Date {
   const minute = parseInt(dateStr.slice(10, 12))
   const second = parseInt(dateStr.slice(12, 14))
 
-  const kaspiDate = new Date(Date.UTC(year, month, day, hour, minute, second))
-
-  return convertKzDateToUTC(kaspiDate)
+  return new Date(year, month, day, hour, minute, second)
 }
 
-export function getKaspiQrLink(orderId: number): string {
+export const getKaspiQrLink = (orderId: number): string => {
   return `https://kaspi.kz/pay/PharmExpress?17533=${orderId}`
 }

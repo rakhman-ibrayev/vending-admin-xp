@@ -187,7 +187,7 @@ export async function GET(request: Request) {
 
       // Update product sales by day analytics
       if (order.machine_id && machineProduct?.product_id && productPrice) {
-        const saleDate = kaspiDate.toISOString().split('T')[0] // YYYY-MM-DD format
+        const saleDate = kaspiDate.toLocaleDateString('sv-SE') // YYYY-MM-DD
 
         // Try to update existing record first (increment sales)
         const { data: existingSale, error: selectError } = await supabase
