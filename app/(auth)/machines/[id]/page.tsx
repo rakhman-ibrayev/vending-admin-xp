@@ -168,6 +168,28 @@ export default function MachineDetailPage() {
             </Card>
           </div>
 
+          {/* Camera Feed */}
+          {machine.surveillance_url && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Видеонаблюдение</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="w-full mx-auto max-w-3xl">
+                  <div className="bg-black p-px rounded-lg overflow-hidden">
+                    <div className="relative w-full aspect-video">
+                      <iframe
+                        className="absolute inset-0 w-full h-full"
+                        src={machine.surveillance_url}
+                        allow="autoplay; fullscreen; clipboard-write; picture-in-picture"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Recent Activity */}
           <Card>
             <CardHeader>
@@ -201,7 +223,7 @@ export default function MachineDetailPage() {
                     </div>
 
                     {index !== ordersQuery.data.orders.length - 1 && (
-                    <Separator />
+                      <Separator />
                     )}
                   </Fragment>
                 ))}

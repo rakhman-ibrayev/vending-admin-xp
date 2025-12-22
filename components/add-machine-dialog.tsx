@@ -36,6 +36,7 @@ export interface FormData {
   num_slots: number
   technician_password: string
   support_contacts: string
+  surveillance_url?: string
 }
 
 const initialValues: FormData = {
@@ -68,7 +69,8 @@ const validationSchema = Yup.object().shape({
   longitude: Yup.number(),
   num_slots: Yup.number().min(1, 'Минимум 1').required('Обязательное поле'),
   technician_password: Yup.string().required('Обязательное поле'),
-  support_contacts: Yup.string().required('Обязательное поле')
+  support_contacts: Yup.string().required('Обязательное поле'),
+  surveillance_url: Yup.string().url('Должен быть валидный URL').notRequired()
 })
 
 interface AddMachineDialogProps {
@@ -249,6 +251,25 @@ export function AddMachineDialog({
               />
               <ErrorMessage
                 name="support_contacts"
+                component="div"
+                className="text-destructive text-xs"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="surveillance_url">
+                Ссылка на видеонаблюдение
+              </Label>
+              <Input
+                id="surveillance_url"
+                name="surveillance_url"
+                value={formik.values.surveillance_url}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                placeholder="URL камеры видеонаблюдения"
+              />
+              <ErrorMessage
+                name="surveillance_url"
                 component="div"
                 className="text-destructive text-xs"
               />

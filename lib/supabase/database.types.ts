@@ -245,6 +245,7 @@ export type Database = {
           status: Database["public"]["Enums"]["machine_status"]
           stop_bits: number
           support_contacts: string | null
+          surveillance_url: string | null
           target_temperature: number
           technician_password: string | null
           temperature: number | null
@@ -267,6 +268,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
           support_contacts?: string | null
+          surveillance_url?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null
@@ -289,6 +291,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["machine_status"]
           stop_bits?: number
           support_contacts?: string | null
+          surveillance_url?: string | null
           target_temperature?: number
           technician_password?: string | null
           temperature?: number | null
