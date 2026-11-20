@@ -9,7 +9,6 @@ import { ProgressBar } from '@/components/progress-bar'
 import {
   MapPin,
   Calendar,
-  Thermometer,
   TrendingUp,
   Clock,
   Activity,
@@ -136,12 +135,6 @@ export default function MachineDetailPage() {
                   </div>
                 </div>
 
-                {machine.temperature && (
-                  <div className="flex items-center gap-2">
-                    <Thermometer className="h-4 w-4 text-muted-foreground" />
-                    <span>Температура: {machine.temperature}°C</span>
-                  </div>
-                )}
               </CardContent>
             </Card>
 

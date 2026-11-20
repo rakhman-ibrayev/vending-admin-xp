@@ -40,9 +40,16 @@ const EditMachine = ({ machineId }: EditMachineProps) => {
           latitude: machine.latitude || undefined,
           longitude: machine.longitude || undefined,
           num_slots: machine.num_slots || 0,
+          // Pass the stored serial settings so saving an edit doesn't reset
+          // them to the dialog's new-machine defaults.
+          baud_rate: machine.baud_rate,
+          device_path: machine.device_path,
+          parity: machine.parity,
+          data_bits: machine.data_bits,
+          stop_bits: machine.stop_bits,
+          surveillance_url: machine.surveillance_url || undefined,
           technician_password: machine.technician_password || '',
           description: machine.description || '',
-          target_temperature: machine.target_temperature || undefined,
           support_contacts: machine.support_contacts || ''
         }}
         onSubmit={async values => {
