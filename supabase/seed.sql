@@ -79,19 +79,19 @@ INSERT INTO public.products (name, sku, price, stock, category, unit, image) VAL
 INSERT INTO public.vending_machines (
   serial_number, name, location, latitude, longitude, status,
   num_slots, baud_rate, data_bits, parity, stop_bits,
-  target_temperature, temperature, device_path, technician_password
+  device_path, technician_password
 ) VALUES
 (
   'VM001', 'Центральная аптека', 'пр. Абая 123, Алматы', 43.2389, 76.8897, 'online',
-  12, 9600, 8, 0, 1, 4.0, 4.2, '/dev/ttyUSB0', 'tech123'
+  10, 115200, 8, 0, 1, '/dev/ttyUSB0', 'tech123'
 ),
 (
   'VM002', 'Торговый центр Астана', 'пр. Республики 456, Астана', 51.1694, 71.4491, 'online',
-  10, 9600, 8, 0, 1, 5.0, 4.8, '/dev/ttyUSB1', 'tech456'
+  10, 115200, 8, 0, 1, '/dev/ttyUSB1', 'tech456'
 ),
 (
   'VM003', 'Поликлиника №3', 'ул. Байтурсынова 789, Шымкент', 42.3417, 69.5901, 'offline',
-  8, 9600, 8, 0, 1, 3.5, 3.7, '/dev/ttyUSB2', 'tech789'
+  8, 115200, 8, 0, 1, '/dev/ttyUSB2', 'tech789'
 );
 
 -- Insert machine products (products in vending machines)

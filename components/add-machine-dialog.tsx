@@ -19,6 +19,7 @@ import {
   type FormikConfig
 } from 'formik'
 import * as Yup from 'yup'
+import { XP_MAX_SLOTS } from '@/lib/xp-protocol/constants'
 
 export interface FormData {
   serial_number: string
@@ -30,7 +31,6 @@ export interface FormData {
   parity: number
   data_bits: number
   stop_bits: number
-  target_temperature: number
   latitude?: number
   longitude?: number
   num_slots: number
@@ -43,13 +43,12 @@ const initialValues: FormData = {
   serial_number: '',
   name: '',
   location: '',
-  baud_rate: 9600,
+  baud_rate: 115200,
   device_path: '/dev/ttyS1',
   parity: 0,
   data_bits: 8,
   stop_bits: 1,
-  target_temperature: 15,
-  num_slots: 120,
+  num_slots: 10,
   technician_password: '',
   support_contacts: ''
 }
@@ -64,10 +63,16 @@ const validationSchema = Yup.object().shape({
   parity: Yup.number().required('Обязательное поле'),
   data_bits: Yup.number().required('Обязательное поле'),
   stop_bits: Yup.number().required('Обязательное поле'),
-  target_temperature: Yup.number().required('Обязательное поле'),
   latitude: Yup.number(),
   longitude: Yup.number(),
-  num_slots: Yup.number().min(1, 'Минимум 1').required('Обязательное поле'),
+  num_slots: Yup.number()
+    .integer('Должно быть целым числом')
+    .min(1, 'Минимум 1')
+    .max(
+      XP_MAX_SLOTS,
+      `Максимум ${XP_MAX_SLOTS} (контроллер XP: 10 рядов × 10 колонок)`
+    )
+    .required('Обязательное поле'),
   technician_password: Yup.string().required('Обязательное поле'),
   support_contacts: Yup.string().required('Обязательное поле'),
   surveillance_url: Yup.string().url('Должен быть валидный URL').notRequired()
@@ -212,7 +217,7 @@ export function AddMachineDialog({
                 value={formik.values.num_slots}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
-                placeholder="20"
+                placeholder="10"
               />
               <ErrorMessage
                 name="num_slots"
@@ -288,25 +293,6 @@ export function AddMachineDialog({
               />
               <ErrorMessage
                 name="description"
-                component="div"
-                className="text-destructive text-xs"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="target_temperature">
-                Целевая температура (°C) *
-              </Label>
-              <Input
-                id="target_temperature"
-                name="target_temperature"
-                type="number"
-                value={formik.values.target_temperature}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-              <ErrorMessage
-                name="target_temperature"
                 component="div"
                 className="text-destructive text-xs"
               />

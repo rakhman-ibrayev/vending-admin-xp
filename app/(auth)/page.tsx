@@ -186,10 +186,6 @@ export default function MachinesPage() {
                       <span>
                         Товары: {machine.currentStock}/{machine.numSlots}
                       </span>
-
-                      {machine.temperature && (
-                        <span>Температура: {machine.temperature}°C</span>
-                      )}
                     </div>
                     <ProgressBar fillPercentage={machine.fillPercentage} />
                   </div>

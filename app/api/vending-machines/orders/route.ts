@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { vendProduct } from '@/lib/m109e/vend-product'
+import { XP_MAX_SLOTS } from '@/lib/xp-protocol/constants'
 import { createDangerousServerClient } from '@/lib/supabase/dangerous-server'
 import { withMachineAuth } from '@/lib/supabase/machine-decorator'
 import type { Machine } from '@/lib/supabase/machine-auth'
@@ -17,18 +17,19 @@ async function createOrder(
     const body: CreateOrderRequest = await req.json()
     const { slot_index } = body
 
-    // Validate input
+    // Validate input: 1-based slot within the machine's configured slot count
+    // and within what the XP controller can address (10 rows x 10 columns).
+    const maxSlot = Math.min(machine.num_slots, XP_MAX_SLOTS)
     if (
-      slot_index === undefined ||
-      slot_index === null ||
       typeof slot_index !== 'number' ||
+      !Number.isInteger(slot_index) ||
       slot_index < 1 ||
-      slot_index > machine.num_slots
+      slot_index > maxSlot
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: `slot_index must be a positive number between 1 and ${machine.num_slots}`
+          message: `slot_index must be an integer between 1 and ${maxSlot}`
         },
         { status: 400 }
       )
@@ -89,7 +90,6 @@ async function createOrder(
       .insert({
         machine_id: machine.id,
         machine_product_id: machineProduct.id,
-        machine_command: vendProduct(slot_index - 1),
         status: 'created',
         product_name: machineProduct.products.name,
         product_sku: machineProduct.products.sku,

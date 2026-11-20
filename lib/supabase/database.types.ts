@@ -246,9 +246,7 @@ export type Database = {
           stop_bits: number
           support_contacts: string | null
           surveillance_url: string | null
-          target_temperature: number
           technician_password: string | null
-          temperature: number | null
         }
         Insert: {
           baud_rate?: number
@@ -269,9 +267,7 @@ export type Database = {
           stop_bits?: number
           support_contacts?: string | null
           surveillance_url?: string | null
-          target_temperature?: number
           technician_password?: string | null
-          temperature?: number | null
         }
         Update: {
           baud_rate?: number
@@ -292,9 +288,7 @@ export type Database = {
           stop_bits?: number
           support_contacts?: string | null
           surveillance_url?: string | null
-          target_temperature?: number
           technician_password?: string | null
-          temperature?: number | null
         }
         Relationships: []
       }
